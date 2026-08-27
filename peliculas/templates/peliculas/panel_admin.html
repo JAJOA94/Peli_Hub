@@ -1,0 +1,38 @@
+{% extends 'peliculas/base.html' %}
+
+{% block titulo %}Panel admin - PeliHub{% endblock %}
+
+{% block contenido %}
+<main>
+    <section class="admin-hero">
+        <span class="kicker">Centro de control</span>
+        <h2>Panel de administración</h2>
+        <p>Gestioná el catálogo y revisá las cuentas registradas.</p>
+    </section>
+
+    <section class="admin-grid">
+        <div class="admin-stat"><span>Películas</span><strong>{{ peliculas_count }}</strong></div>
+        <div class="admin-stat"><span>Usuarios</span><strong>{{ usuarios|length }}</strong></div>
+    </section>
+
+    <section class="admin-actions">
+        <h3>Acciones rápidas</h3>
+        <div class="button-row">
+            <a class="btn-primary" href="{% url 'crear_pelicula' %}">+ Agregar película</a>
+            <a class="btn-secondary" href="{% url 'admin:index' %}">Administración avanzada</a>
+        </div>
+    </section>
+
+    <section class="users-list">
+        <h3>Usuarios registrados</h3>
+        {% for usuario in usuarios %}
+            <div class="user-row">
+                <strong>{{ usuario.username }}</strong>
+                <span>{% if usuario.is_superuser %}Administrador{% else %}Solo lectura{% endif %}</span>
+            </div>
+        {% empty %}
+            <p>No hay usuarios registrados.</p>
+        {% endfor %}
+    </section>
+</main>
+{% endblock %}

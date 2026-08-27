@@ -1,0 +1,15 @@
+{% extends 'peliculas/base.html' %}
+
+{% block titulo %}Película - PeliHub{% endblock %}
+
+{% block contenido %}
+<h2>{% if form.instance.pk %}Editar película{% else %}Agregar película{% endif %}</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar película</button>
+</form>
+
+<a class="text-link" href="{% url 'lista_peliculas' %}">← Volver a películas</a>
+{% endblock %}

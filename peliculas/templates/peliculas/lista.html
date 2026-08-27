@@ -1,0 +1,76 @@
+{% extends 'peliculas/base.html' %}
+
+{% block titulo %}Catálogo - PeliHub{% endblock %}
+
+{% block contenido %}
+<main>
+    <section class="hero">
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-content">
+            <span class="kicker">Catálogo compartido</span>
+            <h2>Historias que se quedan contigo.</h2>
+            <p>Descubrí las películas disponibles y marcá tu progreso: pendiente, en progreso o vista.</p>
+        </div>
+    </section>
+
+    <div class="section-heading">
+        <h2>Películas disponibles</h2>
+        <span>{{ peliculas|length }} título{{ peliculas|length|pluralize:'s' }} en el catálogo</span>
+    </div>
+
+    <form method="GET" class="buscador">
+        <input type="text" name="buscar" placeholder="🔎 Buscar película..." value="{{ busqueda }}">
+        <button type="submit">Buscar</button>
+    </form>
+
+    <div class="peliculas-grid">
+        {% for pelicula in peliculas %}
+            <div class="pelicula">
+                {% if pelicula.portada %}
+                    <img class="portada" src="{{ pelicula.portada.url }}" alt="{{ pelicula.titulo }}">
+                {% endif %}
+
+                <h3>{{ pelicula.titulo }}</h3>
+
+                <div class="info">
+                    <strong>Director:</strong> <span class="dato">{{ pelicula.director }}</span><br>
+                    <strong>Año:</strong> <span class="dato">{{ pelicula.anio_estreno }}</span><br>
+                    <strong>Género:</strong> <span class="dato">{{ pelicula.get_genero_display }}</span>
+                    {% if pelicula.puntuacion %}
+                        <br><strong>Puntuación:</strong> <span class="dato">{{ pelicula.puntuacion }}/5</span>
+                    {% endif %}
+                </div>
+
+                {% if pelicula.sinopsis %}
+                    <p class="sinopsis">{{ pelicula.sinopsis|truncatewords:22 }}</p>
+                {% endif %}
+
+                {% if user.is_superuser %}
+                    <div class="acciones">
+                        <a class="btn-action editar" href="{% url 'editar_pelicula' pelicula.id %}" title="Editar" aria-label="Editar">✏️</a>
+                        <a class="btn-action eliminar" href="{% url 'eliminar_pelicula' pelicula.id %}" title="Eliminar" aria-label="Eliminar">🗑️</a>
+                    </div>
+                {% else %}
+                    <div class="estado">
+                        <form method="POST" action="{% url 'cambiar_estado' pelicula.id %}">
+                            {% csrf_token %}
+                            <label for="estado-{{ pelicula.id }}"><strong>Estado:</strong></label>
+                            <select id="estado-{{ pelicula.id }}" name="estado" onchange="this.form.submit()">
+                                <option value="pendiente" {% if pelicula.estado_usuario == 'pendiente' %}selected{% endif %}>❌ Pendiente</option>
+                                <option value="progreso" {% if pelicula.estado_usuario == 'progreso' %}selected{% endif %}>🔄 En progreso</option>
+                                <option value="vista" {% if pelicula.estado_usuario == 'vista' %}selected{% endif %}>✓ Vista</option>
+                            </select>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        {% empty %}
+            <div class="sin-peliculas">
+                <p>No hay películas en el catálogo todavía.</p>
+            </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'peliculas/base.html' %}
+
+{% block titulo %}PeliHub - Tu plataforma de películas{% endblock %}
+
+{% block contenido %}
+<main>
+    <section class="hero">
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-content">
+            <span class="kicker">Catálogo compartido</span>
+            <h2>Historias que se quedan contigo.</h2>
+            <p>Explorá las películas disponibles y llevá el control de tu progreso: pendiente, en progreso o vista.</p>
+            <div class="hero-cta">
+                <a class="btn-primary" href="{% url 'registro' %}">Crear cuenta gratis</a>
+                <a class="btn-secondary" href="{% url 'login' %}">Iniciar sesión</a>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

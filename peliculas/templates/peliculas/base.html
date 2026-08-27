@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}PeliHub{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'peliculas/app.css' %}">
+</head>
+<body>
+    <header>
+        <div class="header-inner">
+            <h1>🎬 PeliHub</h1>
+            <nav class="menu">
+                {% if user.is_authenticated %}
+                    {% if user.is_superuser %}
+                        <a class="btn-agregar" href="{% url 'crear_pelicula' %}">+ Agregar película</a>
+                        <a class="btn-admin" href="{% url 'panel_admin' %}">Panel admin</a>
+                    {% endif %}
+                    <form method="post" action="{% url 'logout' %}" class="form-logout">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-logout">Cerrar sesión</button>
+                    </form>
+                {% else %}
+                    <a class="btn-secondary" href="{% url 'login' %}">Iniciar sesión</a>
+                    <a class="btn-agregar" href="{% url 'registro' %}">Crear cuenta</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    {% if messages %}
+        <div class="mensajes">
+            {% for message in messages %}
+                <div class="mensaje {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% block contenido %}{% endblock %}
+</body>
+</html>

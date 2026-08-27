@@ -1,0 +1,16 @@
+{% extends 'peliculas/base.html' %}
+
+{% block titulo %}Crear cuenta - PeliHub{% endblock %}
+
+{% block contenido %}
+<h2>Crear cuenta</h2>
+<p class="auth-intro">Registrá tu cuenta para armar tu biblioteca de películas.</p>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Registrarme</button>
+</form>
+
+<a class="text-link" href="{% url 'login' %}">Ya tengo una cuenta</a>
+{% endblock %}
