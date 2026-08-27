@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PeliHub — Informe del proyecto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --ink:#f5f5f1; --muted:#a7a7a7; --panel:#181818; --panel-soft:#242424; --red:#e50914; --red-dark:#b20710; --line:#303030; }
+* { box-sizing:border-box; }
+body { margin:0; background:#0b0b0b; background-image:radial-gradient(circle at 80% 0%, rgba(229,9,20,.16), transparent 32rem); color:var(--ink); font-family:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; line-height:1.65; }
+.wrap { max-width:920px; margin:0 auto; padding:48px 28px 96px; }
+h1,h2,h3 { font-family:'Bebas Neue','Manrope',sans-serif; letter-spacing:.03em; color:#fff; line-height:1.1; }
+h1 { font-size:clamp(2.4rem,6vw,3.6rem); margin:0 0 6px; }
+h2 { font-size:1.85rem; margin-top:54px; border-bottom:1px solid var(--line); padding-bottom:8px; }
+h2::before { content:'▸ '; color:var(--red); }
+h3 { font-size:1.3rem; margin-top:30px; }
+p { margin:14px 0; }
+a { color:#e0505a; }
+blockquote { border-left:4px solid var(--red); margin:18px 0; padding:12px 18px; background:var(--panel); border-radius:0 6px 6px 0; color:#d5d5d5; }
+blockquote p { margin:6px 0; }
+code { background:var(--panel-soft); padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',Consolas,'Courier New',monospace; font-size:.85em; color:#f2b8bd; }
+pre { background:#111; border:1px solid var(--line); border-radius:6px; padding:16px 18px; overflow-x:auto; }
+pre code { background:transparent; color:#e8e8e8; padding:0; font-size:.85rem; }
+table { border-collapse:collapse; width:100%; margin:18px 0; font-size:.9rem; }
+th,td { border:1px solid var(--line); padding:9px 12px; text-align:left; vertical-align:top; }
+th { background:var(--panel); color:var(--red); font-weight:800; }
+tr:nth-child(even) td { background:rgba(255,255,255,.02); }
+hr { border:none; border-top:1px solid var(--line); margin:36px 0; }
+ul,ol { padding-left:22px; }
+li { margin:6px 0; }
+.toc { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:16px 22px; margin:24px 0; }
+.toc ul { margin:0; }
+strong { color:#fff; }
+@media (max-width:640px) { .wrap { padding:32px 16px 72px; } table { font-size:.78rem; } th,td { padding:7px 8px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="toc">
+<ul>
+<li><a href="#pelihub-informe-del-proyecto">🎬 PeliHub — Informe del proyecto</a><ul>
+<li><a href="#1-para-que-sirve">1. ¿Para qué sirve?</a></li>
+<li><a href="#2-tecnologias">2. Tecnologías</a></li>
+<li><a href="#3-estructura-del-proyecto">3. Estructura del proyecto</a></li>
+<li><a href="#4-el-recorrido-de-una-peticion-de-la-url-a-la-pantalla">4. El recorrido de una petición (de la URL a la pantalla)</a></li>
+<li><a href="#5-los-modelos-las-tablas-de-datos">5. Los modelos (las "tablas" de datos)</a><ul>
+<li><a href="#pelicula-una-pelicula-del-catalogo">Pelicula — una película del catálogo</a></li>
+<li><a href="#estadopelicula-el-estado-de-visionado-de-un-usuario-sobre-una-pelicula">EstadoPelicula — el estado de visionado de un usuario sobre una película</a></li>
+<li><a href="#perfil-datos-extra-del-usuario">Perfil — datos extra del usuario</a></li>
+</ul>
+</li>
+<li><a href="#6-urls-y-vistas-tabla-completa">6. URLs y vistas (tabla completa)</a></li>
+<li><a href="#7-la-logica-clave-estado-de-visionado-automatico">7. La lógica clave: estado de visionado automático</a></li>
+<li><a href="#8-seguridad">8. Seguridad</a></li>
+<li><a href="#9-configuracion-importante-configsettingspy">9. Configuración importante (config/settings.py)</a></li>
+<li><a href="#10-como-correr-el-proyecto">10. Cómo correr el proyecto</a></li>
+<li><a href="#11-tests">11. Tests</a></li>
+<li><a href="#12-que-pasa-si-modifico-tal-codigo">12. ★ ¿Qué pasa si modifico tal código?</a><ul>
+<li><a href="#truco-general-para-experimentar-sin-miedo">Truco general para experimentar sin miedo</a></li>
+</ul>
+</li>
+<li><a href="#13-diagramas-visuales">13. Diagramas visuales</a><ul>
+<li><a href="#131-arquitectura-general">13.1 Arquitectura general</a></li>
+<li><a href="#132-relacion-entre-modelos-entidadrelacion">13.2 Relación entre modelos (entidad–relación)</a></li>
+<li><a href="#133-maquina-de-estados-del-visionado">13.3 Máquina de estados del visionado</a></li>
+<li><a href="#134-flujo-del-inicio-de-sesion">13.4 Flujo del inicio de sesión</a></li>
+</ul>
+</li>
+<li><a href="#14-ejercicios-practicos">14. Ejercicios prácticos</a></li>
+<li><a href="#15-glosario-ampliado">15. Glosario ampliado</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="pelihub-informe-del-proyecto">🎬 PeliHub — Informe del proyecto</h1>
+<blockquote>
+<p><strong>Resumen ejecutivo:</strong> PeliHub es una aplicación web hecha con <strong>Django</strong> que funciona
+como un <strong>catálogo de películas</strong>. Los <strong>administradores</strong> agregan, editan y eliminan
+películas (con título, director, año, género, sinopsis, puntuación y carátula), y los
+<strong>usuarios normales</strong> se registran para ver el catálogo y llevar el control de su
+propio visionado: cada película queda en <strong>Pendiente</strong>, <strong>En progreso</strong> o <strong>Vista</strong>
+según lo que haga el usuario, <strong>de forma automática</strong> (sin editar nada a mano).</p>
+</blockquote>
+<hr />
+<h2 id="1-para-que-sirve">1. ¿Para qué sirve?</h2>
+<table>
+<thead>
+<tr>
+<th>Rol</th>
+<th>Qué puede hacer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Visitante (sin cuenta)</strong></td>
+<td>Ver la landing, registrarse, iniciar sesión, recuperar contraseña.</td>
+</tr>
+<tr>
+<td><strong>Usuario normal</strong></td>
+<td>Ver el catálogo, buscar películas, abrir "Ver película" (pasa a <em>En progreso</em>), marcar "Terminar de ver" (pasa a <em>Vista</em>). <strong>No edita</strong> el estado a mano.</td>
+</tr>
+<tr>
+<td><strong>Administrador (superusuario)</strong></td>
+<td>Agregar/editar/eliminar películas, ver el panel de administración, ver cuentas registradas. No gestiona estados de visionado (eso es de cada usuario).</td>
+</tr>
+</tbody>
+</table>
+<p>La idea central: <strong>el estado de visionado se deriva del comportamiento</strong>, no de una
+edición manual. Un usuario no "elige" su estado en un menú; el sistema lo deduce:</p>
+<ul>
+<li>No abrió la película → <strong>Pendiente</strong></li>
+<li>Abrió "Ver película" pero no la terminó → <strong>En progreso</strong></li>
+<li>Apretó "Terminar de ver" → <strong>Vista</strong></li>
+</ul>
+<hr />
+<h2 id="2-tecnologias">2. Tecnologías</h2>
+<table>
+<thead>
+<tr>
+<th>Tecnología</th>
+<th>Para qué</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Python 3.13</strong></td>
+<td>Lenguaje del proyecto.</td>
+</tr>
+<tr>
+<td><strong>Django 6.1</strong></td>
+<td>Framework web: maneja URLs, vistas, modelos (base de datos), formularios, autenticación y plantillas.</td>
+</tr>
+<tr>
+<td><strong>SQLite</strong></td>
+<td>Base de datos (archivo <code>db.sqlite3</code>). Ideal para desarrollo: no requiere servidor.</td>
+</tr>
+<tr>
+<td><strong>HTML + CSS</strong></td>
+<td>Interfaz (plantillas en <code>templates/</code>, estilos en <code>static/peliculas/app.css</code>).</td>
+</tr>
+<tr>
+<td><strong>Pillow</strong></td>
+<td>Procesar imágenes (las carátulas).</td>
+</tr>
+<tr>
+<td><strong>django-axes</strong></td>
+<td>Anti fuerza bruta: bloquea el login tras varios intentos fallidos.</td>
+</tr>
+<tr>
+<td><strong>python-dotenv</strong></td>
+<td>Lee variables de entorno (clave secreta) desde <code>.env</code>.</td>
+</tr>
+<tr>
+<td><strong>WhiteNoise</strong></td>
+<td>Sirve archivos estáticos en producción.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-estructura-del-proyecto">3. Estructura del proyecto</h2>
+<pre><code>Peli_Hub/
+├── manage.py               ← comando principal (runserver, migrate, test…)
+├── db.sqlite3              ← la base de datos (no se sube a Git)
+├── .env                    ← variables secretas (no se sube a Git)
+├── .env.example            ← plantilla de .env (sí se sube)
+├── requirements.txt        ← dependencias
+├── README.md               ← documentación general
+├── config/                 ← configuración DEL PROYECTO
+│   ├── settings.py         ← TODO lo que configura la app (BD, seguridad, apps…)
+│   ├── urls.py             ← rutas &quot;raíz&quot; (admin, landing, películas, recuperar contraseña)
+│   ├── wsgi.py / asgi.py   ← punto de entrada para servidores
+├── mi_app/                 ← app &quot;núcleo&quot;: la página de inicio (landing)
+│   ├── views.py            ← vista inicio(): redirige o muestra la landing
+│   ├── urls.py             ← ruta '' → inicio
+│   └── templates/mi_app/inicio.html
+└── peliculas/              ← app PRINCIPAL (catálogo, usuarios, estados)
+    ├── models.py           ← Pelicula, EstadoPelicula, Perfil
+    ├── views.py            ← toda la lógica de cada página
+    ├── urls.py             ← rutas del catálogo y autenticación
+    ├── forms.py            ← formularios (película y registro)
+    ├── admin.py            ← configuración del admin de Django
+    ├── tests.py            ← pruebas automáticas (22 tests)
+    ├── migrations/         ← historial de cambios de la base de datos
+    ├── static/peliculas/app.css   ← estilos
+    └── templates/peliculas/*.html  ← páginas
+</code></pre>
+<p><strong>Dato clave:</strong> Django separa el proyecto en <em>apps</em>. <code>config</code> es el proyecto;
+<code>peliculas</code> y <code>mi_app</code> son apps reutilizables. Cada app tiene su propio <code>models.py</code>,
+<code>views.py</code>, <code>urls.py</code> y <code>templates/</code>.</p>
+<hr />
+<h2 id="4-el-recorrido-de-una-peticion-de-la-url-a-la-pantalla">4. El recorrido de una petición (de la URL a la pantalla)</h2>
+<p>Cuando escribís <code>http://127.0.0.1:8000/peliculas/</code> en el navegador:</p>
+<pre><code>Navegador ──▶ config/urls.py ──▶ peliculas/urls.py ──▶ views.lista_peliculas()
+                                                              │
+                                            consulta la BD (models.Pelicula)
+                                                              │
+                                       renderiza lista.html (plantilla)
+                                                              │
+                                                              ▼
+                                                   HTML ──▶ Navegador
+</code></pre>
+<ol>
+<li><strong>URL</strong> → el archivo <code>urls.py</code> decide qué <em>vista</em> atiende cada ruta.</li>
+<li><strong>Vista</strong> (<code>views.py</code>) → hace la lógica: consulta la base, valida permisos, procesa formularios.</li>
+<li><strong>Modelo</strong> (<code>models.py</code>) → define las tablas de la base de datos y cómo consultarlas.</li>
+<li><strong>Plantilla</strong> (<code>templates/</code>) → muestra los datos como HTML.</li>
+</ol>
+<hr />
+<h2 id="5-los-modelos-las-tablas-de-datos">5. Los modelos (las "tablas" de datos)</h2>
+<h3 id="pelicula-una-pelicula-del-catalogo"><code>Pelicula</code> — una película del catálogo</h3>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>titulo</code></td>
+<td>Texto (200)</td>
+<td>Obligatorio</td>
+</tr>
+<tr>
+<td><code>director</code></td>
+<td>Texto (150)</td>
+<td>Obligatorio</td>
+</tr>
+<tr>
+<td><code>anio_estreno</code></td>
+<td>Entero</td>
+<td>Obligatorio</td>
+</tr>
+<tr>
+<td><code>genero</code></td>
+<td>Texto con opciones</td>
+<td>accion, aventura, comedia, drama, terror, scifi, romance, documental, animacion, otros</td>
+</tr>
+<tr>
+<td><code>sinopsis</code></td>
+<td>Texto largo</td>
+<td>Opcional</td>
+</tr>
+<tr>
+<td><code>puntuacion</code></td>
+<td>Entero (1–5)</td>
+<td>Opcional (<code>null=True</code>)</td>
+</tr>
+<tr>
+<td><code>portada</code></td>
+<td>Imagen</td>
+<td>Opcional, se guarda en <code>media/portadas/</code></td>
+</tr>
+<tr>
+<td><code>fecha_agregada</code></td>
+<td>Fecha/hora</td>
+<td>Se setea sola al crearla</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>class Meta: ordering = ['-anio_estreno', '-fecha_agregada']</code> → el catálogo se ordena
+por año (más nuevo primero) y luego por fecha.</p>
+</blockquote>
+<h3 id="estadopelicula-el-estado-de-visionado-de-un-usuario-sobre-una-pelicula"><code>EstadoPelicula</code> — el estado de visionado de un usuario sobre una película</h3>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>usuario</code></td>
+<td>Clave foránea → User</td>
+<td>A quién pertenece el estado</td>
+</tr>
+<tr>
+<td><code>pelicula</code></td>
+<td>Clave foránea → Pelicula</td>
+<td>Sobre qué película</td>
+</tr>
+<tr>
+<td><code>estado</code></td>
+<td>Texto con opciones</td>
+<td><code>pendiente</code>, <code>progreso</code>, <code>vista</code></td>
+</tr>
+<tr>
+<td><code>actualizado</code></td>
+<td>Fecha/hora</td>
+<td>Se actualiza sola (<code>auto_now</code>)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>unique_together = ('usuario', 'pelicula')</code> → <strong>un solo estado por usuario y película</strong>
+(no puede haber dos filas para la misma combinación).</p>
+</blockquote>
+<h3 id="perfil-datos-extra-del-usuario"><code>Perfil</code> — datos extra del usuario</h3>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>usuario</code></td>
+<td>Uno a uno → User</td>
+<td>Se crea al registrarse</td>
+</tr>
+<tr>
+<td><code>telefono</code></td>
+<td>Texto (20)</td>
+<td>Guardado en el registro</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-urls-y-vistas-tabla-completa">6. URLs y vistas (tabla completa)</h2>
+<p>Rutas de <code>peliculas/urls.py</code> (prefijo <code>/peliculas/</code>):</p>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Vista</th>
+<th>¿Quién?</th>
+<th>Qué hace</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/peliculas/</code></td>
+<td><code>lista_peliculas</code></td>
+<td>Cualquier usuario logueado</td>
+<td>Lista el catálogo + estado de cada película</td>
+</tr>
+<tr>
+<td><code>/peliculas/nueva/</code></td>
+<td><code>crear_pelicula</code></td>
+<td>Solo admin</td>
+<td>Formulario para agregar</td>
+</tr>
+<tr>
+<td><code>/peliculas/editar/&lt;id&gt;/</code></td>
+<td><code>editar_pelicula</code></td>
+<td>Solo admin</td>
+<td>Editar una película</td>
+</tr>
+<tr>
+<td><code>/peliculas/eliminar/&lt;id&gt;/</code></td>
+<td><code>eliminar_pelicula</code></td>
+<td>Solo admin</td>
+<td>Borrar (con confirmación)</td>
+</tr>
+<tr>
+<td><code>/peliculas/ver/&lt;id&gt;/</code></td>
+<td><code>ver_pelicula</code></td>
+<td>Usuario normal</td>
+<td>Marca <strong>En progreso</strong> + muestra la página de reproducción</td>
+</tr>
+<tr>
+<td><code>/peliculas/terminar/&lt;id&gt;/</code></td>
+<td><code>terminar_pelicula</code></td>
+<td>Usuario normal (POST)</td>
+<td>Marca <strong>Vista</strong></td>
+</tr>
+<tr>
+<td><code>/peliculas/login/</code></td>
+<td><code>iniciar_sesion</code></td>
+<td>Anónimo</td>
+<td>Iniciar sesión</td>
+</tr>
+<tr>
+<td><code>/peliculas/registro/</code></td>
+<td><code>registrarse</code></td>
+<td>Anónimo</td>
+<td>Crear cuenta</td>
+</tr>
+<tr>
+<td><code>/peliculas/panel-admin/</code></td>
+<td><code>panel_admin</code></td>
+<td>Solo admin</td>
+<td>Panel con stats y usuarios</td>
+</tr>
+<tr>
+<td><code>/peliculas/logout/</code></td>
+<td><code>cerrar_sesion</code></td>
+<td>Logueado (POST)</td>
+<td>Cerrar sesión</td>
+</tr>
+</tbody>
+</table>
+<p>Rutas de <code>config/urls.py</code>:</p>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Qué es</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/</code></td>
+<td>Landing (<code>mi_app</code> → <code>inicio</code>)</td>
+</tr>
+<tr>
+<td><code>/admin/</code></td>
+<td>Admin de Django</td>
+</tr>
+<tr>
+<td><code>/accounts/password-reset/</code> …</td>
+<td>Recuperación de contraseña</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-la-logica-clave-estado-de-visionado-automatico">7. La lógica clave: estado de visionado automático</h2>
+<p>Esto está en <code>peliculas/views.py</code>, funciones <code>ver_pelicula</code> y <code>terminar_pelicula</code>.</p>
+<pre><code>        ┌─────────────┐
+        │  PENDIENTE  │  (por defecto: no hay fila en EstadoPelicula)
+        └──────┬──────┘
+               │  clic en &quot;Ver película&quot;
+               ▼
+        ┌──────────────┐
+        │  EN PROGRESO │
+        └──────┬───────┘
+               │  clic en &quot;Terminar de ver&quot;
+               ▼
+        ┌──────────┐
+        │   VISTA  │
+        └────┬─────┘
+             │  clic en &quot;Ver de nuevo&quot;  →  sigue en VISTA (no degrada)
+             ▼
+           VISTA
+</code></pre>
+<p>Reglas exactas (código real):</p>
+<ol>
+<li><strong>Pendiente</strong> = <em>no hay registro</em>. El sistema no crea fila hasta que el usuario
+   interactúa. En la vista <code>lista_peliculas</code>, si no hay estado se usa <code>'pendiente'</code>.</li>
+<li><strong>Ver película</strong> (<code>ver_pelicula</code>): si no hay estado <strong>o</strong> el estado no es <code>'vista'</code>,
+   se escribe <code>'progreso'</code> con <code>update_or_create</code>.</li>
+<li><strong>Terminar</strong> (<code>terminar_pelicula</code>): escribe <code>'vista'</code>.</li>
+<li><strong>Ver de nuevo</strong> una película ya <code>'vista'</code>: la condición
+   <code>if not actual or actual.estado != 'vista'</code> <strong>evita</strong> degradarla; sigue <code>'vista'</code>.</li>
+</ol>
+<blockquote>
+<p><code>update_or_create(usuario=..., pelicula=..., defaults={'estado': ...})</code> significa:
+"si ya existe la fila, actualizá el estado; si no, creala". Junto con
+<code>unique_together</code>, garantiza una sola fila por usuario+película.</p>
+</blockquote>
+<hr />
+<h2 id="8-seguridad">8. Seguridad</h2>
+<table>
+<thead>
+<tr>
+<th>Protección</th>
+<th>Cómo se logra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Contraseñas y claves</strong></td>
+<td><code>SECRET_KEY</code> se lee de <code>.env</code> (gitignored). Sin ella y con <code>DEBUG=False</code>, la app no arranca.</td>
+</tr>
+<tr>
+<td><strong>Anti fuerza bruta</strong></td>
+<td><code>django-axes</code>: 5 intentos fallidos → bloqueo de 1 hora (<code>AXES_FAILURE_LIMIT</code>, <code>AXES_COOLOFF_TIME</code>).</td>
+</tr>
+<tr>
+<td><strong>SQL injection</strong></td>
+<td>El ORM de Django parametriza las consultas (no se concatenan strings SQL).</td>
+</tr>
+<tr>
+<td><strong>XSS</strong></td>
+<td>Las plantillas escapan el texto automáticamente (<code>{{ variable }}</code>).</td>
+</tr>
+<tr>
+<td><strong>CSRF</strong></td>
+<td><code>{% csrf_token %}</code> en cada formulario POST.</td>
+</tr>
+<tr>
+<td><strong>Open redirect</strong></td>
+<td>El <code>next</code> del login se valida con <code>url_has_allowed_host_and_scheme</code>.</td>
+</tr>
+<tr>
+<td><strong>Logout por GET</strong></td>
+<td><code>@require_POST</code> impide cerrar sesión con un simple enlace.</td>
+</tr>
+<tr>
+<td><strong>Permisos por rol</strong></td>
+<td><code>if request.user.is_superuser</code> protege crear/editar/eliminar; <code>@login_required</code> protege las demás.</td>
+</tr>
+<tr>
+<td><strong>Cabeceras</strong></td>
+<td><code>X-Frame-Options: DENY</code>, <code>nosniff</code>, <code>Referrer-Policy</code>, cookies <code>HttpOnly</code>/<code>SameSite</code>.</td>
+</tr>
+<tr>
+<td><strong>Producción</strong></td>
+<td>Con <code>DEBUG=False</code>: HTTPS forzado, HSTS, cookies seguras, estáticos con WhiteNoise.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-configuracion-importante-configsettingspy">9. Configuración importante (<code>config/settings.py</code>)</h2>
+<ul>
+<li><code>DEBUG</code> → <code>True</code> en desarrollo, <code>False</code> en producción (cambia mucho: HTTPS, estáticos, errores detallados).</li>
+<li><code>INSTALLED_APPS</code> → lista de apps activas (<code>mi_app</code>, <code>peliculas</code>, <code>axes</code>, etc.). <strong>Si no está una app aquí, Django no la usa.</strong></li>
+<li><code>DATABASES</code> → apunta a <code>db.sqlite3</code>.</li>
+<li><code>MEDIA_URL</code> / <code>MEDIA_ROOT</code> → dónde se guardan y sirven las carátulas.</li>
+<li><code>LOGIN_URL = 'login'</code> → a dónde redirige <code>@login_required</code> cuando no hay sesión.</li>
+<li><code>AUTH_PASSWORD_VALIDATORS</code> → reglas de seguridad de contraseñas.</li>
+<li><code>LANGUAGE_CODE = 'es'</code> y <code>TIME_ZONE = 'America/Santiago'</code>.</li>
+</ul>
+<hr />
+<h2 id="10-como-correr-el-proyecto">10. Cómo correr el proyecto</h2>
+<pre><code class="language-bash">cd Peli_Hub
+./venv/Scripts/python.exe manage.py migrate      # aplicar migraciones
+./venv/Scripts/python.exe manage.py runserver    # levantar servidor
+# abrir http://127.0.0.1:8000/
+</code></pre>
+<p>Otros comandos útiles:</p>
+<pre><code class="language-bash">./venv/Scripts/python.exe manage.py check         # verificar configuración
+./venv/Scripts/python.exe manage.py test          # correr los 22 tests
+./venv/Scripts/python.exe manage.py createsuperuser
+./venv/Scripts/python.exe manage.py makemigrations  # crear migración tras cambiar modelos
+./venv/Scripts/python.exe manage.py collectstatic   # juntar estáticos (producción)
+</code></pre>
+<hr />
+<h2 id="11-tests">11. Tests</h2>
+<p>En <code>peliculas/tests.py</code> hay <strong>22 pruebas</strong> que verifican, entre otras cosas:</p>
+<ul>
+<li>El registro crea usuario + perfil.</li>
+<li>El catálogo muestra todas las películas, ordenadas por año.</li>
+<li>Un usuario normal <strong>no puede</strong> crear/editar/eliminar películas.</li>
+<li><code>ver_pelicula</code> pone el estado en <strong>progreso</strong>.</li>
+<li><code>terminar_pelicula</code> pone el estado en <strong>vista</strong>.</li>
+<li>El estado por defecto es <strong>pendiente</strong> (sin fila en la BD).</li>
+<li>El estado es <strong>independiente por usuario</strong>.</li>
+<li>"Ver de nuevo" no degrada una película ya vista.</li>
+<li>El admin no puede ver/terminar (no gestiona estados).</li>
+<li>El usuario normal ve el botón "Ver película"; el admin no.</li>
+<li>Logout exige POST (405 en GET).</li>
+<li>El panel admin es solo para superusuarios.</li>
+</ul>
+<hr />
+<h2 id="12-que-pasa-si-modifico-tal-codigo">12. ★ ¿Qué pasa si modifico tal código?</h2>
+<p>Esta es la parte práctica: qué efecto tiene tocar cada pieza.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>¿Qué cambio?</th>
+<th>¿Qué pasa?</th>
+<th>¿Por qué?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Quitar <code>@login_required</code> de <code>lista_peliculas</code> (views.py)</td>
+<td>El catálogo se vuelve <strong>público</strong>: cualquiera sin cuenta lo ve. No podrá marcar estados (esas vistas sí exigen sesión).</td>
+<td>Ese decorador es el "portero" que exige sesión. Sin él, la vista atiende a cualquiera.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Quitar <code>@require_POST</code> de <code>terminar_pelicula</code></td>
+<td>Marcar "Vista" funcionaría con un simple enlace o recargando la página. Cambiar estado por GET es mala práctica (efectos secundarios).</td>
+<td>El decorador obliga a que el cambio llegue por POST (más seguro, evita cambios accidentales).</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Quitar <code>{% csrf_token %}</code> de un formulario</td>
+<td>Al enviar, Django responde <strong>403 "CSRF verification failed"</strong>.</td>
+<td>Django exige ese token en cada POST para evitar falsificación de peticiones.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>En <code>ver_pelicula</code>, cambiar la condición <code>if not actual or actual.estado != 'vista'</code> y siempre poner <code>'progreso'</code></td>
+<td>Una película ya <strong>Vista</strong> bajaría a <strong>En progreso</strong> al abrirla de nuevo.</td>
+<td>Esa condición es la que "protege" el estado Vista para que no se degrade.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Quitar el <code>if request.user.is_superuser</code> de <code>ver_pelicula</code> / <code>terminar_pelicula</code></td>
+<td>El <strong>admin</strong> empezaría a tener estados de visionado propios, mezclando roles.</td>
+<td>Ese guard separa "admin gestiona catálogo" de "usuario gestiona su visionado".</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Agregar un género nuevo en <code>GENEROS</code> (models.py)</td>
+<td>Hay que correr <code>makemigrations</code> + <code>migrate</code>; el género nuevo aparece en el formulario y en <code>get_genero_display()</code>.</td>
+<td>Los <code>choices</code> quedan grabados en la migración; la BD y el código deben quedar sincronizados.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Quitar <code>unique_together = ('usuario', 'pelicula')</code> de <code>EstadoPelicula</code></td>
+<td>Podrían existir <strong>varios estados</strong> para la misma película y usuario (filas duplicadas).</td>
+<td>Esa restricción garantiza una sola fila por combinación.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Cambiar <code>ordering = ['-anio_estreno', '-fecha_agregada']</code> en <code>Pelicula.Meta</code></td>
+<td>Cambia el <strong>orden</strong> del catálogo (p. ej. año ascendente si sacás el <code>-</code>).</td>
+<td>Esa meta define cómo <code>Pelicula.objects.all()</code> ordena por defecto.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Borrar la línea <code>urlpatterns += static(MEDIA_URL, …)</code> en <code>config/urls.py</code> (en DEBUG)</td>
+<td>Las <strong>carátulas dejan de cargar</strong> (404), aunque los archivos sigan en <code>media/</code>.</td>
+<td>Esa línea es la que sirve los archivos subidos en desarrollo.</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Cambiar <code>MEDIA_ROOT</code> a otra carpeta sin mover las imágenes</td>
+<td>Las portadas "desaparecen" (404), porque se buscan en la carpeta nueva.</td>
+<td>El servidor sirve las imágenes desde <code>MEDIA_ROOT</code>; si apunta a otro lado, no las encuentra.</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Poner <code>DEBUG = False</code> sin configurar <code>ALLOWED_HOSTS</code> ni <code>SECRET_KEY</code></td>
+<td>La app <strong>no arranca</strong> (falta clave) o responde <strong>400</strong> (host no permitido); y deja de servir estáticos/media en dev.</td>
+<td>En producción Django endurece la seguridad: exige clave real y hosts permitidos.</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Bajar <code>AXES_FAILURE_LIMIT = 5</code> a <code>1</code></td>
+<td>El login <strong>bloquea tras 1 intento fallido</strong> (en vez de 5).</td>
+<td>Es el umbral de intentos fallidos permitidos por django-axes.</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Poner <code>puntuacion</code> sin <code>null=True, blank=True</code></td>
+<td>Guardar una película sin puntuación daría <strong>error de validación</strong> (campo requerido).</td>
+<td><code>null=True/blank=True</code> es lo que hace el campo opcional.</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Cambiar el texto de <code>ESTADO_DISPLAY</code> en <code>lista_peliculas</code></td>
+<td>Solo cambia la <strong>etiqueta visible</strong> ("Vista" → "La vi", etc.). La lógica interna no cambia.</td>
+<td>Ese diccionario traduce el valor interno (<code>'vista'</code>) al texto que se muestra.</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Renombrar una ruta en <code>urls.py</code> (ej. <code>ver_pelicula</code>) sin actualizar <code>{% url %}</code> / <code>reverse</code></td>
+<td>Error <strong>NoReverseMatch</strong> al renderizar las páginas que la usan.</td>
+<td>Las plantillas y vistas buscan las URLs por su <em>nombre</em>; si el nombre cambia, no lo encuentran.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="truco-general-para-experimentar-sin-miedo">Truco general para experimentar sin miedo</h3>
+<ul>
+<li>Hacé <strong>un cambio a la vez</strong> y mirá qué pasa.</li>
+<li>Usá <code>./venv/Scripts/python.exe manage.py check</code> y <code>manage.py test</code> después de cada cambio.</li>
+<li>Si rompés algo, <code>git status</code> te muestra qué archivos tocaste y <code>git restore &lt;archivo&gt;</code> lo revierte.</li>
+</ul>
+<hr />
+<h2 id="13-diagramas-visuales">13. Diagramas visuales</h2>
+<h3 id="131-arquitectura-general">13.1 Arquitectura general</h3>
+<pre><code>        ┌──────────────────────────────┐
+        │   Navegador (HTML + CSS)      │
+        └──────────────┬───────────────┘
+                       │ petición HTTP (GET / POST)
+                       ▼
+        ┌──────────────────────────────┐
+        │        Django (PeliHub)       │
+        │  urls.py → views.py →         │
+        │  models.py → templates/       │
+        └───────┬───────────────┬──────┘
+                │ SQL (ORM)     │ imágenes
+                ▼               ▼
+        ┌──────────────┐  ┌────────────────┐
+        │   SQLite     │  │ media/portadas/ │
+        │ (db.sqlite3) │  │  (carátulas)    │
+        └──────────────┘  └────────────────┘
+</code></pre>
+<h3 id="132-relacion-entre-modelos-entidadrelacion">13.2 Relación entre modelos (entidad–relación)</h3>
+<pre><code>User ─────── 1:1 ─────── Perfil
+   │                     (telefono)
+   │ 1 ──────── N  (un usuario puede tener muchos estados)
+   ▼
+EstadoPelicula ─────── N:1 ───────▶ Pelicula
+(usuario, pelicula,                 (titulo, director,
+ estado, actualizado)                anio, genero, ...)
+</code></pre>
+<h3 id="133-maquina-de-estados-del-visionado">13.3 Máquina de estados del visionado</h3>
+<pre><code> ┌───────────┐   clic &quot;Ver película&quot;    ┌─────────────┐
+ │ PENDIENTE │ ───────────────────────▶ │ EN PROGRESO │
+ └───────────┘                          └──────┬──────┘
+                                               │ clic &quot;Terminar de ver&quot;
+                                               ▼
+                                        ┌───────────┐
+                                        │   VISTA   │
+                                        └─────┬─────┘
+                                              │ clic &quot;Ver de nuevo&quot; (no degrada)
+                                              ▼
+                                        ┌───────────┐
+                                        │   VISTA   │
+                                        └───────────┘
+</code></pre>
+<h3 id="134-flujo-del-inicio-de-sesion">13.4 Flujo del inicio de sesión</h3>
+<pre><code>GET  /peliculas/login/  ──▶ muestra el formulario
+
+POST usuario + contraseña ──▶ ¿son válidos?
+     ├── sí ──▶ login()  +  redirect a /peliculas/
+     └── no ──▶ error  +  django-axes suma 1 intento (a los 5 → bloqueo de 1 hora)
+</code></pre>
+<hr />
+<h2 id="14-ejercicios-practicos">14. Ejercicios prácticos</h2>
+<p>Para que cada uno pruebe con su computadora. Después de cada paso, fijate en el resultado.</p>
+<ol>
+<li><strong>Registrar una cuenta nueva</strong> (menú → "Crear cuenta"). <em>Qué esperás:</em> todas las películas aparecen con el badge <strong>Pendiente</strong>.</li>
+<li><strong>Abrir "Ver película"</strong> de una película y <strong>volver sin terminar</strong>. <em>Qué esperás:</em> queda <strong>En progreso</strong>.</li>
+<li><strong>Entrar de nuevo y apretar "Terminar de ver"</strong>. <em>Qué esperás:</em> pasa a <strong>Vista</strong> y sale el mensaje de confirmación.</li>
+<li><strong>Abrir "Ver de nuevo"</strong> una película ya Vista. <em>Qué esperás:</em> <strong>sigue Vista</strong> (no baja de categoría).</li>
+<li><strong>Entrar como superusuario</strong> y mirar el catálogo. <em>Qué esperás:</em> no ves botones de estado; en su lugar ves ✏️ y 🗑️.</li>
+<li><strong>Agregar una película</strong> (admin → "+ Agregar película"). <em>Qué esperás:</em> aparece ordenada por año, con su carátula si subiste una.</li>
+<li><strong>Buscar por título</strong> en el buscador. <em>Qué esperás:</em> la lista se filtra.</li>
+<li><strong>Entrar a <code>/peliculas/nueva/</code> como usuario normal</strong> (escribí la URL a mano). <em>Qué esperás:</em> te redirige con el mensaje "Solo los administradores…".</li>
+<li><strong>Experimento CSRF:</strong> quitá <code>{% csrf_token %}</code> del <code>login.html</code> y enviá el formulario. <em>Qué esperás:</em> error <strong>403</strong>. <em>Revertí el cambio después.</em></li>
+<li><strong>Experimento de orden:</strong> en <code>models.py</code> cambiá <code>ordering</code> a <code>['anio_estreno']</code> y recargá. <em>Qué esperás:</em> el catálogo se ordena del más viejo al más nuevo.</li>
+<li><strong>Experimento de bloqueo:</strong> en <code>settings.py</code> poné <code>AXES_FAILURE_LIMIT = 1</code>, fallá la contraseña una vez. <em>Qué esperás:</em> la cuenta/IP queda bloqueada. <em>Revertí después.</em></li>
+<li><strong>Correr los tests:</strong> <code>./venv/Scripts/python.exe manage.py test</code>. <em>Qué esperás:</em> <code>OK</code> con 22 tests.</li>
+</ol>
+<hr />
+<h2 id="15-glosario-ampliado">15. Glosario ampliado</h2>
+<table>
+<thead>
+<tr>
+<th>Término</th>
+<th>Qué significa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Vista (view)</strong></td>
+<td>Función que recibe una petición y devuelve una respuesta (HTML o redirección).</td>
+</tr>
+<tr>
+<td><strong>Modelo (model)</strong></td>
+<td>Clase de Python que define una tabla de la base de datos.</td>
+</tr>
+<tr>
+<td><strong>Plantilla (template)</strong></td>
+<td>Archivo HTML con placeholders <code>{{ variable }}</code> y <code>{% tag %}</code>.</td>
+</tr>
+<tr>
+<td><strong>Migración</strong></td>
+<td>Archivo que describe un cambio en la base de datos; <code>migrate</code> lo aplica.</td>
+</tr>
+<tr>
+<td><strong>ORM</strong></td>
+<td>Capa que traduce Python a SQL; <code>Pelicula.objects.filter(...)</code> en vez de escribir SQL a mano.</td>
+</tr>
+<tr>
+<td><strong>Queryset</strong></td>
+<td>El resultado de una consulta (<code>Pelicula.objects.all()</code>); es "perezoso", no toca la BD hasta que se usa.</td>
+</tr>
+<tr>
+<td><strong>Clave foránea (FK)</strong></td>
+<td>Relación "muchos a uno" (p. ej. cada estado pertenece a una película).</td>
+</tr>
+<tr>
+<td><strong>Relación 1:1</strong></td>
+<td>Un registro se relaciona con exactamente otro (p. ej. <code>User</code> ↔ <code>Perfil</code>).</td>
+</tr>
+<tr>
+<td><strong>Decorador</strong></td>
+<td><code>@algo</code> encima de una función; le agrega comportamiento (exigir login, solo POST, etc.).</td>
+</tr>
+<tr>
+<td><strong>Petición (request)</strong></td>
+<td>Lo que el navegador envía al servidor; trae método (GET/POST), datos y cookies.</td>
+</tr>
+<tr>
+<td><strong>Respuesta (response)</strong></td>
+<td>Lo que el servidor devuelve (HTML, redirección, error…).</td>
+</tr>
+<tr>
+<td><strong>GET / POST</strong></td>
+<td>Métodos HTTP: GET pide datos (no cambia estado); POST envía datos y suele cambiar estado.</td>
+</tr>
+<tr>
+<td><strong>Redirección (redirect)</strong></td>
+<td>Respuesta que manda al navegador a otra URL (código 302).</td>
+</tr>
+<tr>
+<td><strong>Middleware</strong></td>
+<td>Capa que procesa cada petición/respuesta (seguridad, sesiones, CSRF…).</td>
+</tr>
+<tr>
+<td><strong>Sesión (session)</strong></td>
+<td>Memoria del servidor para recordar quién está logueado entre peticiones.</td>
+</tr>
+<tr>
+<td><strong>Cookie</strong></td>
+<td>Dato que el navegador guarda y reenvía; Django la usa para la sesión.</td>
+</tr>
+<tr>
+<td><strong>Contexto (context)</strong></td>
+<td>Diccionario de variables que una vista pasa a la plantilla.</td>
+</tr>
+<tr>
+<td><strong>CSRF</strong></td>
+<td>Protección contra peticiones falsificadas entre sitios (token en cada formulario).</td>
+</tr>
+<tr>
+<td><strong>Estáticos (static)</strong></td>
+<td>Archivos que no cambian: CSS, JS, imágenes de diseño.</td>
+</tr>
+<tr>
+<td><strong>Media</strong></td>
+<td>Archivos subidos por los usuarios (las carátulas en <code>media/portadas/</code>).</td>
+</tr>
+<tr>
+<td><strong>Superusuario</strong></td>
+<td>Usuario administrador (<code>is_superuser=True</code>), con acceso total al admin.</td>
+</tr>
+<tr>
+<td><strong>Staff</strong></td>
+<td>Usuario que puede entrar al admin de Django pero no necesariamente es superusuario.</td>
+</tr>
+<tr>
+<td><strong><code>manage.py</code></strong></td>
+<td>Herramienta de línea de comandos: <code>runserver</code>, <code>migrate</code>, <code>test</code>, <code>createsuperuser</code>…</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>Informe generado para explicar el proyecto PeliHub. Estado actual: 18 películas con carátula, 4 usuarios (2 admin, 2 normales), 22 tests en verde.</em></p>
+</div>
+</body>
+</html>

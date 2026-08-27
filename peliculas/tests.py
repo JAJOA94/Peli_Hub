@@ -79,25 +79,46 @@ class PeliculasTests(TestCase):
         self.assertRedirects(response, '/peliculas/')
         self.assertTrue(Pelicula.objects.filter(titulo='Nueva peli').exists())
 
-    def test_cambiar_estado_guarda_por_usuario(self):
+    def test_ver_pelicula_la_pone_en_progreso(self):
         self.client.force_login(self.normal)
-        self.client.post(
-            f'/peliculas/estado/{self.pelicula_antigua.id}/', {'estado': 'vista'}
+        response = self.client.get(
+            f'/peliculas/ver/{self.pelicula_antigua.id}/'
         )
+        self.assertEqual(response.status_code, 200)
+        estado = EstadoPelicula.objects.get(
+            usuario=self.normal, pelicula=self.pelicula_antigua
+        )
+        self.assertEqual(estado.estado, 'progreso')
+
+    def test_terminar_pelicula_la_pone_en_vista(self):
+        self.client.force_login(self.normal)
+        self.client.get(f'/peliculas/ver/{self.pelicula_antigua.id}/')
+        response = self.client.post(
+            f'/peliculas/terminar/{self.pelicula_antigua.id}/'
+        )
+        self.assertRedirects(response, '/peliculas/')
         estado = EstadoPelicula.objects.get(
             usuario=self.normal, pelicula=self.pelicula_antigua
         )
         self.assertEqual(estado.estado, 'vista')
 
+    def test_estado_por_defecto_es_pendiente(self):
+        self.client.force_login(self.normal)
+        response = self.client.get('/peliculas/')
+        self.assertContains(response, 'Pendiente')
+        self.assertFalse(
+            EstadoPelicula.objects.filter(
+                usuario=self.normal, pelicula=self.pelicula_antigua
+            ).exists()
+        )
+
     def test_estado_es_independiente_por_usuario(self):
         self.client.force_login(self.normal)
-        self.client.post(
-            f'/peliculas/estado/{self.pelicula_antigua.id}/', {'estado': 'vista'}
-        )
+        self.client.get(f'/peliculas/ver/{self.pelicula_antigua.id}/')
+        self.client.post(f'/peliculas/terminar/{self.pelicula_antigua.id}/')
+
         self.client.force_login(self.otro)
-        self.client.post(
-            f'/peliculas/estado/{self.pelicula_antigua.id}/', {'estado': 'progreso'}
-        )
+        self.client.get(f'/peliculas/ver/{self.pelicula_antigua.id}/')
 
         self.assertEqual(
             EstadoPelicula.objects.get(usuario=self.normal, pelicula=self.pelicula_antigua).estado,
@@ -108,15 +129,38 @@ class PeliculasTests(TestCase):
             'progreso',
         )
 
-    def test_normal_ve_selector_de_estado(self):
+    def test_ver_de_nuevo_no_degrada_vista(self):
+        self.client.force_login(self.normal)
+        self.client.get(f'/peliculas/ver/{self.pelicula_antigua.id}/')
+        self.client.post(f'/peliculas/terminar/{self.pelicula_antigua.id}/')
+        # Volver a entrar a 'ver' no la saca de 'vista'.
+        self.client.get(f'/peliculas/ver/{self.pelicula_antigua.id}/')
+        self.assertEqual(
+            EstadoPelicula.objects.get(
+                usuario=self.normal, pelicula=self.pelicula_antigua
+            ).estado,
+            'vista',
+        )
+
+    def test_admin_no_puede_ver_ni_terminar(self):
+        self.client.force_login(self.admin)
+        self.client.get(f'/peliculas/ver/{self.pelicula_antigua.id}/')
+        self.client.post(f'/peliculas/terminar/{self.pelicula_antigua.id}/')
+        self.assertFalse(
+            EstadoPelicula.objects.filter(
+                usuario=self.admin, pelicula=self.pelicula_antigua
+            ).exists()
+        )
+
+    def test_normal_ve_boton_ver_pelicula(self):
         self.client.force_login(self.normal)
         response = self.client.get('/peliculas/')
-        self.assertContains(response, '<select')
+        self.assertContains(response, 'Ver película')
 
-    def test_admin_no_ve_selector_de_estado(self):
+    def test_admin_no_ve_boton_ver_pelicula(self):
         self.client.force_login(self.admin)
         response = self.client.get('/peliculas/')
-        self.assertNotContains(response, '<select')
+        self.assertNotContains(response, 'Ver película')
 
     def test_normal_no_puede_editar(self):
         self.client.force_login(self.normal)

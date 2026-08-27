@@ -11,7 +11,7 @@
         <div class="hero-content">
             <span class="kicker">Catálogo compartido</span>
             <h2>Historias que se quedan contigo.</h2>
-            <p>Descubrí las películas disponibles y marcá tu progreso: pendiente, en progreso o vista.</p>
+            <p>Descubrí las películas y marcá si la viste o la dejaste a medias.</p>
         </div>
     </section>
 
@@ -54,15 +54,12 @@
                     </div>
                 {% else %}
                     <div class="estado">
-                        <form method="POST" action="{% url 'cambiar_estado' pelicula.id %}">
-                            {% csrf_token %}
-                            <label for="estado-{{ pelicula.id }}"><strong>Estado:</strong></label>
-                            <select id="estado-{{ pelicula.id }}" name="estado" onchange="this.form.submit()">
-                                <option value="pendiente" {% if pelicula.estado_usuario == 'pendiente' %}selected{% endif %}>❌ Pendiente</option>
-                                <option value="progreso" {% if pelicula.estado_usuario == 'progreso' %}selected{% endif %}>🔄 En progreso</option>
-                                <option value="vista" {% if pelicula.estado_usuario == 'vista' %}selected{% endif %}>✓ Vista</option>
-                            </select>
-                        </form>
+                        <span class="estado-badge badge-{{ pelicula.estado_usuario }}">{{ pelicula.estado_usuario_display }}</span>
+                        <a class="btn-ver-pelicula" href="{% url 'ver_pelicula' pelicula.id %}">
+                            {% if pelicula.estado_usuario == 'vista' %}↺ Ver de nuevo
+                            {% elif pelicula.estado_usuario == 'progreso' %}▶ Continuar viendo
+                            {% else %}▶ Ver película{% endif %}
+                        </a>
                     </div>
                 {% endif %}
             </div>

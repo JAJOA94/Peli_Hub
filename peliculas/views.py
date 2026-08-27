@@ -30,14 +30,22 @@ def lista_peliculas(request):
         peliculas = peliculas.filter(titulo__icontains=busqueda)
     peliculas = list(peliculas)
 
-    # El estado de visionado es propio de cada usuario (no del admin).
+    # El estado de visionado se DERIVA de lo que hizo cada usuario
+    # (la vio / la dejó a medias / nada = pendiente). No se edita libremente.
+    ESTADO_DISPLAY = {
+        'pendiente': 'Pendiente',
+        'progreso': 'En progreso',
+        'vista': 'Vista',
+    }
     if not request.user.is_superuser:
         estados = {
             e.pelicula_id: e.estado
             for e in EstadoPelicula.objects.filter(usuario=request.user)
         }
         for p in peliculas:
-            p.estado_usuario = estados.get(p.id, 'pendiente')
+            estado = estados.get(p.id, 'pendiente')
+            p.estado_usuario = estado
+            p.estado_usuario_display = ESTADO_DISPLAY[estado]
 
     return render(request, 'peliculas/lista.html', {
         'peliculas': peliculas,
@@ -100,18 +108,46 @@ def eliminar_pelicula(request, id):
 
 
 @login_required
-@require_POST
-def cambiar_estado(request, id):
-    pelicula = get_object_or_404(Pelicula, id=id)
-    nuevo_estado = request.POST.get('estado')
+def ver_pelicula(request, id):
+    """El usuario pulsa 'Ver película' -> pasa automáticamente a 'en progreso'.
 
-    if nuevo_estado in dict(EstadoPelicula.ESTADOS):
+    Si ya la vio (estado 'vista'), volver a verla no la degrada: sigue en 'vista'.
+    """
+    if request.user.is_superuser:
+        messages.error(request, 'El estado de visionado es propio de cada usuario.')
+        return redirect('lista_peliculas')
+
+    pelicula = get_object_or_404(Pelicula, id=id)
+
+    actual = EstadoPelicula.objects.filter(
+        usuario=request.user, pelicula=pelicula
+    ).first()
+
+    if not actual or actual.estado != 'vista':
         EstadoPelicula.objects.update_or_create(
             usuario=request.user,
             pelicula=pelicula,
-            defaults={'estado': nuevo_estado},
+            defaults={'estado': 'progreso'},
         )
 
+    return render(request, 'peliculas/ver.html', {'pelicula': pelicula})
+
+
+@login_required
+@require_POST
+def terminar_pelicula(request, id):
+    """El usuario termina de ver la película -> pasa automáticamente a 'vista'."""
+    if request.user.is_superuser:
+        messages.error(request, 'El estado de visionado es propio de cada usuario.')
+        return redirect('lista_peliculas')
+
+    pelicula = get_object_or_404(Pelicula, id=id)
+    EstadoPelicula.objects.update_or_create(
+        usuario=request.user,
+        pelicula=pelicula,
+        defaults={'estado': 'vista'},
+    )
+    messages.success(request, f'Marcaste "{pelicula.titulo}" como vista.')
     return redirect('lista_peliculas')
 
 
