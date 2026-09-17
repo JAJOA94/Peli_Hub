@@ -3,14 +3,44 @@
 {% block titulo %}Crear cuenta - PeliHub{% endblock %}
 
 {% block contenido %}
-<h2>Crear cuenta</h2>
-<p class="auth-intro">Registrá tu cuenta para armar tu biblioteca de películas.</p>
+<main class="auth-page">
+    <section class="auth-card">
+        <div class="auth-header">
+            <span class="kicker">Únete a PeliHub</span>
+            <h2>Crear cuenta</h2>
+        </div>
 
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Registrarme</button>
-</form>
+        <form method="POST" class="auth-form">
+            {% csrf_token %}
 
-<a class="text-link" href="{% url 'login' %}">Ya tengo una cuenta</a>
+            {% if form.non_field_errors %}
+                <div class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="field-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="field-errors">
+                            {% for error in field.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn-submit">Registrarme</button>
+        </form>
+
+        <div class="auth-links">
+            <a class="text-link" href="{% url 'login' %}">Ya tengo una cuenta</a>
+        </div>
+    </section>
+</main>
 {% endblock %}
