@@ -488,11 +488,12 @@ body > a {
 /* ==== Añadidos: portada, sinopsis, mensajes y errores ==== */
 
 .portada {
+    aspect-ratio: 16 / 9;
     display: block;
-    height: 190px;
     margin: 0 -20px 18px;
     object-fit: cover;
-    width: calc(100% + 40px);
+    object-position: center;
+    width: calc(100% + 40px)
 }
 
 .sinopsis {
