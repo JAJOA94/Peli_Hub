@@ -3,18 +3,46 @@
 {% block titulo %}Iniciar sesión - PeliHub{% endblock %}
 
 {% block contenido %}
-<h2>Iniciar sesión</h2>
+<main class="auth-page">
+    <section class="auth-card">
+        <div class="auth-header">
+            <span class="kicker">Bienvenido de nuevo</span>
+            <h2>Iniciar sesión</h2>
+        </div>
 
-<form method="POST">
-    {% csrf_token %}
-    {% if form.non_field_errors %}
-        <div class="errorlist">{{ form.non_field_errors }}</div>
-    {% endif %}
-    <input type="hidden" name="next" value="{{ request.GET.next }}">
-    {{ form.as_p }}
-    <button type="submit">Iniciar sesión</button>
-</form>
+        <form method="POST" class="auth-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-<a class="text-link" href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
-<a class="text-link" href="{% url 'registro' %}">Crear una cuenta nueva</a>
+            <input type="hidden" name="next" value="{{ request.GET.next }}">
+
+            {% for field in form %}
+                <div class="field-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="field-errors">
+                            {% for error in field.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn-submit">Iniciar sesión</button>
+        </form>
+
+        <div class="auth-links">
+            <a class="text-link" href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
+            <a class="text-link" href="{% url 'registro' %}">Crear una cuenta nueva</a>
+        </div>
+    </section>
+</main>
 {% endblock %}
