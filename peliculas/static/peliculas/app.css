@@ -24,15 +24,19 @@ body {
     margin: 0;
     color: var(--ink);
     background: #0b0b0b;
-    background-image: radial-gradient(circle at 75% 0%, rgba(229, 9, 20, .22), transparent 31rem), linear-gradient(135deg, #090909 0%, #111 52%, #080808 100%);
+    background-image: radial-gradient(circle at 75% 0%, rgba(224, 164, 88, .16), transparent 31rem), linear-gradient(135deg, #090909 0%, #111 52%, #080808 100%);
     font-family: 'Manrope', sans-serif;
 }
 
 header {
-    background: linear-gradient(180deg, rgba(0, 0, 0, .92), rgba(0, 0, 0, .36));
+    background: rgba(10, 9, 8, .78);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    box-shadow: var(--shadow-soft);
     padding: 22px 0;
-    position: relative;
-    z-index: 2;
+    position: sticky;
+    top: 0;
+    z-index: 20;
 }
 
 .header-inner {
