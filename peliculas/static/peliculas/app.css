@@ -510,7 +510,7 @@ body > a {
     header { padding: 18px 0; }
     .header-inner { padding: 0 20px; }
     header h1 { font-size: 1.2rem; }
-    .menu { gap: 10px; }
+    .menu { gap: 10px; flex-wrap: wrap; }
     .btn-agregar { padding: 9px 10px; }
     main { padding: 0 18px 50px; }
     .hero { margin-left: -18px; margin-right: -18px; min-height: 350px; padding: 32px 24px; }
@@ -796,4 +796,31 @@ button.btn-logout:hover {
     .reproductor-portada {
         width: 180px;
     }
+}
+
+a:focus-visible,
+button:focus-visible,
+.btn-agregar:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-admin:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+/* ==== Breakpoint intermedio (tablet) ==== */
+@media (max-width: 900px) {
+    .header-inner { flex-wrap: wrap; gap: 12px; }
+    .hero { min-height: 340px; }
+    .hero h2 { font-size: clamp(2.6rem, 6vw, 4.2rem); }
+    .peliculas-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+}
+
+/* ==== Menu no se desborda en pantallas muy chicas ==== */
+@media (max-width: 480px) {
+    .menu { flex-wrap: wrap; justify-content: center; }
+    .hero-content { max-width: 100%; }
 }
