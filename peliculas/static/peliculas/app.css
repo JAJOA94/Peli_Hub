@@ -1,13 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --ink: #f5f5f1;
-    --muted: #a7a7a7;
-    --panel: #181818;
-    --panel-soft: #242424;
-    --red: #e50914;
-    --red-dark: #b20710;
-    --line: #303030;
+    --ink: #f5f0e6;
+    --muted: #9a958c;
+    --panel: #17161a;
+    --panel-soft: #211f24;
+    --accent: #e0a458;
+    --accent-dark: #b97e34;
+    --line: #2c2a30;
+    --radius-sm: 4px;
+    --radius-md: 10px;
+    --radius-lg: 20px;
+    --shadow-soft: 0 20px 40px -20px rgba(0, 0, 0, .65);
+    --transition-base: .25s ease;
 }
 
 * {
