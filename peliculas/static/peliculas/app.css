@@ -257,34 +257,40 @@ form select {
 
 .peliculas-grid {
     display: grid;
-    gap: 18px;
+    gap: 24px;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
 .pelicula {
     background: var(--panel);
-    border: 1px solid #292929;
-    border-radius: 4px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
     min-height: 275px;
     overflow: hidden;
     padding: 0 20px 20px;
-    transition: border-color .25s ease, transform .25s ease;
+    transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .pelicula:hover {
-    border-color: #666;
-    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-6px);
 }
 
 .pelicula h3 {
-    color: #fff;
+    color: var(--ink);
     font-size: 1.35rem;
     font-weight: 800;
     margin: 0 0 12px;
+    transition: color var(--transition-base);
+}
+
+.pelicula:hover h3 {
+    color: var(--accent);
 }
 
 .info {
-    color: #d0d0d0;
+    color: var(--muted);
     font-size: .85rem;
     font-weight: 600;
     line-height: 1.8;
@@ -292,7 +298,7 @@ form select {
 
 .info strong,
 .estado strong {
-    color: #a7a7a7;
+    color: var(--muted);
     font-weight: 700;
 }
 
@@ -521,7 +527,11 @@ body > a {
     margin: 0 -20px 18px;
     object-fit: cover;
     object-position: center;
-    width: calc(100% + 40px)
+    width: calc(100% + 40px);
+}
+
+.pelicula .portada {
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .sinopsis {
