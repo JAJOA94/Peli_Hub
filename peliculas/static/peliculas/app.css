@@ -804,11 +804,145 @@ button.btn-logout:hover {
     background: var(--red-dark);
 }
 
+/* ==== Formularios de auth y edición ==== */
+
+.auth-page {
+    padding-top: 56px;
+}
+
+.auth-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin: 0 auto;
+    max-width: 780px;
+    padding: 30px 28px;
+}
+
+.form-card {
+    max-width: 860px;
+}
+
+.auth-header {
+    margin-bottom: 22px;
+}
+
+.auth-header .kicker {
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.auth-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    letter-spacing: .03em;
+    line-height: 1;
+    margin: 0;
+}
+
+.auth-form {
+    display: grid;
+    gap: 18px;
+}
+
+.field-group {
+    display: grid;
+    gap: 8px;
+}
+
+.field-group label {
+    color: #d9d9d9;
+    font-size: .8rem;
+    font-weight: 700;
+}
+
+.field-group input,
+.field-group select,
+.field-group textarea {
+    background: var(--panel-soft);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--ink);
+    font: inherit;
+    padding: 12px 14px;
+    width: 100%;
+}
+
+.field-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus {
+    border-color: rgba(229, 9, 20, .8);
+    box-shadow: 0 0 0 3px rgba(229, 9, 20, .12);
+    outline: none;
+}
+
+.field-errors {
+    color: #ff9da1;
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.errorlist {
+    background: rgba(200, 35, 45, .08);
+    border: 1px solid rgba(200, 35, 45, .3);
+    border-radius: 4px;
+    color: #ffb3b8;
+    margin: 0 0 10px;
+    padding: 10px 12px;
+}
+
+.errorlist p {
+    margin: 0;
+}
+
+.btn-submit {
+    background: var(--red);
+    border: 0;
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-size: .9rem;
+    font-weight: 800;
+    padding: 12px 18px;
+    transition: background .2s ease, transform .2s ease;
+}
+
+.btn-submit:hover {
+    background: var(--red-dark);
+    transform: translateY(-1px);
+}
+
+.detail-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+}
+
 @media (max-width: 640px) {
     .reproductor-grid {
         grid-template-columns: 1fr;
     }
     .reproductor-portada {
         width: 180px;
+    }
+    .auth-card {
+        padding: 24px 18px;
+    }
+    .detail-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+    .detail-actions .btn-submit,
+    .detail-actions .btn-secondary {
+        text-align: center;
+        width: 100%;
     }
 }
