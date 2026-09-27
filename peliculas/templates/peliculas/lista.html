@@ -27,7 +27,7 @@
 
     <div class="peliculas-grid">
         {% for pelicula in peliculas %}
-            <div class="pelicula">
+            <article class="pelicula">
                 {% if pelicula.portada %}
                     <img class="portada" src="{{ pelicula.portada.url }}" alt="{{ pelicula.titulo }}">
                 {% endif %}
@@ -49,8 +49,8 @@
 
                 {% if user.is_superuser %}
                     <div class="acciones">
-                        <a class="btn-action editar" href="{% url 'editar_pelicula' pelicula.id %}" title="Editar" aria-label="Editar">✏️</a>
-                        <a class="btn-action eliminar" href="{% url 'eliminar_pelicula' pelicula.id %}" title="Eliminar" aria-label="Eliminar">🗑️</a>
+                        <a class="btn-action editar" href="{% url 'editar_pelicula' pelicula.id %}" title="Editar" aria-label="Editar">✏️ Editar</a>
+                        <a class="btn-action eliminar" href="{% url 'eliminar_pelicula' pelicula.id %}" title="Eliminar" aria-label="Eliminar">🗑️ Eliminar</a>
                     </div>
                 {% else %}
                     <div class="estado">
@@ -62,7 +62,7 @@
                         </a>
                     </div>
                 {% endif %}
-            </div>
+            </article>
         {% empty %}
             <div class="sin-peliculas">
                 <p>No hay películas en el catálogo todavía.</p>
