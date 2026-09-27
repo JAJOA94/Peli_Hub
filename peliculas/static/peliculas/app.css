@@ -677,6 +677,11 @@ button.btn-logout:hover {
     grid-template-columns: 280px 1fr;
 }
 
+.reproductor-cover-wrap {
+    display: flex;
+    justify-content: center;
+}
+
 .reproductor-portada {
     border: 1px solid var(--line);
     border-radius: 6px;
@@ -686,6 +691,11 @@ button.btn-logout:hover {
     object-fit: cover;
     object-position: center;
     width: 280px;
+}
+
+.reproductor-content {
+    display: grid;
+    gap: 8px;
 }
 
 .reproductor-titulo {
@@ -735,6 +745,13 @@ button.btn-logout:hover {
 .pantalla-video p {
     color: #888;
     margin: 0;
+}
+
+.detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
 }
 
 .form-terminar {

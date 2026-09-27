@@ -8,13 +8,13 @@
         <a class="volver" href="{% url 'lista_peliculas' %}">← Volver al catálogo</a>
 
         <div class="reproductor-grid">
-            <div>
+            <div class="reproductor-cover-wrap">
                 {% if pelicula.portada %}
                     <img class="reproductor-portada" src="{{ pelicula.portada.url }}" alt="{{ pelicula.titulo }}">
                 {% endif %}
             </div>
 
-            <div>
+            <div class="reproductor-content">
                 <span class="kicker">{{ pelicula.get_genero_display }} · {{ pelicula.anio_estreno }}</span>
                 <h1 class="reproductor-titulo">{{ pelicula.titulo }}</h1>
 
@@ -32,10 +32,13 @@
                     <p>Reproduciendo: {{ pelicula.titulo }}</p>
                 </div>
 
-                <form method="POST" action="{% url 'terminar_pelicula' pelicula.id %}" class="form-terminar">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-terminar">✓ Terminar de ver</button>
-                </form>
+                <div class="detail-actions">
+                    <form method="POST" action="{% url 'terminar_pelicula' pelicula.id %}" class="form-terminar">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-terminar">✓ Terminar de ver</button>
+                    </form>
+                    <a class="btn-secondary" href="{% url 'lista_peliculas' %}">Volver al catálogo</a>
+                </div>
             </div>
         </div>
     </div>
