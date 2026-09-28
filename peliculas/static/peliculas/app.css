@@ -1,13 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --ink: #f5f5f1;
-    --muted: #a7a7a7;
-    --panel: #181818;
-    --panel-soft: #242424;
-    --red: #e50914;
-    --red-dark: #b20710;
-    --line: #303030;
+    --ink: #f5f0e6;
+    --muted: #9a958c;
+    --panel: #17161a;
+    --panel-soft: #211f24;
+    --accent: #e0a458;
+    --accent-dark: #b97e34;
+    --line: #2c2a30;
+    --radius-sm: 4px;
+    --radius-md: 10px;
+    --radius-lg: 20px;
+    --shadow-soft: 0 20px 40px -20px rgba(0, 0, 0, .65);
+    --transition-base: .25s ease;
 }
 
 * {
@@ -19,15 +24,19 @@ body {
     margin: 0;
     color: var(--ink);
     background: #0b0b0b;
-    background-image: radial-gradient(circle at 75% 0%, rgba(229, 9, 20, .22), transparent 31rem), linear-gradient(135deg, #090909 0%, #111 52%, #080808 100%);
+    background-image: radial-gradient(circle at 75% 0%, rgba(224, 164, 88, .16), transparent 31rem), linear-gradient(135deg, #090909 0%, #111 52%, #080808 100%);
     font-family: 'Manrope', sans-serif;
 }
 
 header {
-    background: linear-gradient(180deg, rgba(0, 0, 0, .92), rgba(0, 0, 0, .36));
+    background: rgba(10, 9, 8, .78);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    box-shadow: var(--shadow-soft);
     padding: 22px 0;
-    position: relative;
-    z-index: 2;
+    position: sticky;
+    top: 0;
+    z-index: 20;
 }
 
 .header-inner {
@@ -42,7 +51,7 @@ header {
 
 header h1,
 body > h1 {
-    color: var(--red);
+    color: var(--accent);
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.6rem;
     letter-spacing: .08em;
@@ -74,14 +83,14 @@ button {
 
 .btn-agregar,
 button {
-    background: var(--red);
+    background: var(--accent);
     color: white;
     padding: 11px 18px;
 }
 
 .btn-agregar:hover,
 button:hover {
-    background: var(--red-dark);
+    background: var(--accent-dark);
     transform: translateY(-1px);
 }
 
@@ -111,13 +120,13 @@ a:hover {
 
 .btn-admin,
 .btn-primary {
-    background: var(--red);
+    background: var(--accent);
     color: #fff;
 }
 
 .btn-admin:hover,
 .btn-primary:hover {
-    background: var(--red-dark);
+    background: var(--accent-dark);
 }
 
 .btn-secondary {
@@ -160,11 +169,22 @@ body > form label {
 }
 
 .kicker {
-    color: #d5d5d5;
+    align-items: center;
+    color: var(--accent);
+    display: flex;
     font-size: .76rem;
     font-weight: 700;
-    letter-spacing: .18em;
+    gap: 10px;
+    letter-spacing: .22em;
     text-transform: uppercase;
+}
+
+.kicker::before {
+    background: var(--accent);
+    content: '';
+    display: inline-block;
+    height: 2px;
+    width: 28px;
 }
 
 .hero h2,
@@ -175,29 +195,37 @@ body > h2 {
 }
 
 .hero h2 {
+    background: linear-gradient(180deg, var(--ink) 0%, var(--ink) 55%, var(--muted) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     font-size: clamp(3rem, 7vw, 5.5rem);
     line-height: .94;
     margin: 14px 0 18px;
 }
-
 .hero p {
-    color: #d2d2d2;
+    color: var(--muted);
     font-size: 1.05rem;
-    line-height: 1.55;
+    line-height: 1.6;
     margin: 0;
+    max-width: 46ch;
 }
 
 .section-heading {
     align-items: end;
+    border-bottom: 1px solid var(--line);
     display: flex;
     justify-content: space-between;
-    margin-bottom: 18px;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
 }
 
 .section-heading h2 {
+    border-left: 3px solid var(--accent);
     font-size: 1.8rem;
     margin: 0;
-}
+    padding-left: 14px;
+}ajustar jerarquía tipográfica global
 
 .section-heading span {
     color: var(--muted);
@@ -229,34 +257,40 @@ form select {
 
 .peliculas-grid {
     display: grid;
-    gap: 18px;
+    gap: 24px;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
 .pelicula {
     background: var(--panel);
-    border: 1px solid #292929;
-    border-radius: 4px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
     min-height: 275px;
     overflow: hidden;
     padding: 0 20px 20px;
-    transition: border-color .25s ease, transform .25s ease;
+    transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .pelicula:hover {
-    border-color: #666;
-    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-6px);
 }
 
 .pelicula h3 {
-    color: #fff;
+    color: var(--ink);
     font-size: 1.35rem;
     font-weight: 800;
     margin: 0 0 12px;
+    transition: color var(--transition-base);
+}
+
+.pelicula:hover h3 {
+    color: var(--accent);
 }
 
 .info {
-    color: #d0d0d0;
+    color: var(--muted);
     font-size: .85rem;
     font-weight: 600;
     line-height: 1.8;
@@ -264,7 +298,7 @@ form select {
 
 .info strong,
 .estado strong {
-    color: #a7a7a7;
+    color: var(--muted);
     font-weight: 700;
 }
 
@@ -476,7 +510,7 @@ body > a {
     header { padding: 18px 0; }
     .header-inner { padding: 0 20px; }
     header h1 { font-size: 1.2rem; }
-    .menu { gap: 10px; }
+    .menu { gap: 10px; flex-wrap: wrap; }
     .btn-agregar { padding: 9px 10px; }
     main { padding: 0 18px 50px; }
     .hero { margin-left: -18px; margin-right: -18px; min-height: 350px; padding: 32px 24px; }
@@ -488,11 +522,16 @@ body > a {
 /* ==== Añadidos: portada, sinopsis, mensajes y errores ==== */
 
 .portada {
+    aspect-ratio: 16 / 9;
     display: block;
-    height: 190px;
     margin: 0 -20px 18px;
     object-fit: cover;
+    object-position: center;
     width: calc(100% + 40px);
+}
+
+.pelicula .portada {
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .sinopsis {
@@ -634,7 +673,7 @@ button.btn-logout:hover {
 
 .btn-ver-pelicula {
     align-items: center;
-    background: var(--red);
+    background: var(--accent);
     border-radius: 3px;
     color: #fff;
     display: inline-flex;
@@ -646,7 +685,7 @@ button.btn-logout:hover {
 }
 
 .btn-ver-pelicula:hover {
-    background: var(--red-dark);
+    background: var(--accent-dark);
     color: #fff;
     transform: translateY(-1px);
 }
@@ -742,12 +781,12 @@ button.btn-logout:hover {
 }
 
 .btn-terminar {
-    background: var(--red);
+    background: var(--accent);
     color: #fff;
 }
 
 .btn-terminar:hover {
-    background: var(--red-dark);
+    background: var(--accent-dark);
 }
 
 @media (max-width: 640px) {
@@ -757,4 +796,31 @@ button.btn-logout:hover {
     .reproductor-portada {
         width: 180px;
     }
+}
+
+a:focus-visible,
+button:focus-visible,
+.btn-agregar:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-admin:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+/* ==== Breakpoint intermedio (tablet) ==== */
+@media (max-width: 900px) {
+    .header-inner { flex-wrap: wrap; gap: 12px; }
+    .hero { min-height: 340px; }
+    .hero h2 { font-size: clamp(2.6rem, 6vw, 4.2rem); }
+    .peliculas-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+}
+
+/* ==== Menu no se desborda en pantallas muy chicas ==== */
+@media (max-width: 480px) {
+    .menu { flex-wrap: wrap; justify-content: center; }
+    .hero-content { max-width: 100%; }
 }

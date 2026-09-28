@@ -71,6 +71,12 @@ Abrí http://127.0.0.1:8000/ en tu navegador.
 | `DJANGO_DEBUG`            | `False`                        | `True` solo en desarrollo                    |
 | `DJANGO_ALLOWED_HOSTS`    | `localhost,127.0.0.1,[::1]`    | Hosts permitidos, separados por coma         |
 | `DJANGO_SECURE_SSL_REDIRECT` | `True` (en prod)            | Forzar HTTPS                                 |
+| `DATABASE_URL`             | —                              | URL opcional de PostgreSQL/Supabase          |
+
+Si definís `DATABASE_URL` en `.env`, Django usa PostgreSQL (por ejemplo, la URL
+de conexión de Supabase) en lugar de SQLite. Si la omitís, continúa usando la
+base local `db.sqlite3`. No publiques nunca el `.env`: contiene la contraseña
+de la base de datos.
 
 ## Despliegue (producción)
 
