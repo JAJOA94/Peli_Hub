@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import Pelicula, Perfil
+from .models import Calificacion, Pelicula, Perfil
 
 
 class PeliculaForm(forms.ModelForm):
@@ -22,6 +22,13 @@ class PeliculaForm(forms.ModelForm):
             'sinopsis': forms.Textarea(attrs={'rows': 4}),
         }
 
+class CalificacionForm(forms.ModelForm):
+    class Meta:
+        model = Calificacion
+        fields = ['puntuacion', 'comentario']
+        widgets = {
+            'comentario': forms.Textarea(attrs={'rows': 3, 'placeholder': '¿Qué te pareció? (opcional)'}),
+        }
 
 class RegistroForm(UserCreationForm):
     email = forms.EmailField(required=True, label='Correo electrónico')
