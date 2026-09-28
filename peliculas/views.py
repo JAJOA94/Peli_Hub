@@ -1,3 +1,5 @@
+from urllib import request
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -6,8 +8,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
-from .forms import PeliculaForm, RegistroForm
-from .models import EstadoPelicula, Pelicula
+from .forms import CalificacionForm, PeliculaForm, RegistroForm
+from .models import Calificacion, EstadoPelicula, Pelicula
 
 
 def _redireccion_segura(request, por_defecto):
@@ -146,8 +148,17 @@ def ver_pelicula(request, id):
     except Exception as e:
         messages.error(request, 'Error de conexión al registrar tu avance.')
         return redirect('lista_peliculas')
+    
+    calificacion_usuario = Calificacion.objects.filter(
+        usuario=request.user, pelicula=pelicula
+    ).first()
+    form_calificacion = CalificacionForm(instance=calificacion_usuario)
 
-    return render(request, 'peliculas/ver.html', {'pelicula': pelicula})
+    return render(request, 'peliculas/ver.html', {
+        'pelicula': pelicula,
+        'form_calificacion': form_calificacion,
+        'calificacion_usuario': calificacion_usuario,
+    })
 
 
 @login_required
@@ -171,6 +182,33 @@ def terminar_pelicula(request, id):
         messages.error(request, 'Error en el servidor al intentar actualizar el estado.')
         
     return redirect('lista_peliculas')
+
+@login_required
+@require_POST
+def calificar_pelicula(request, id):
+    """Usuario deja/actualiza su calificación (1-5) y comentario; recalcula el promedio."""
+    if request.user.is_superuser:
+        messages.error(request, 'Las calificaciones son propias de cada usuario.')
+        return redirect('lista_peliculas')
+
+    pelicula = get_object_or_404(Pelicula, id=id)
+    instancia = Calificacion.objects.filter(usuario=request.user, pelicula=pelicula).first()
+    form = CalificacionForm(request.POST, instance=instancia)
+
+    if form.is_valid():
+        try:
+            calificacion = form.save(commit=False)
+            calificacion.usuario = request.user
+            calificacion.pelicula = pelicula
+            calificacion.save()
+            pelicula.recalcular_promedio()
+            messages.success(request, '¡Gracias por tu calificación!')
+        except Exception as e:
+            messages.error(request, 'Error en la base de datos al guardar tu calificación.')
+    else:
+        messages.error(request, 'Revisa tu calificación: debe ser un puntaje entre 1 y 5.')
+
+    return redirect('ver_pelicula', id=pelicula.id)
 
 
 def iniciar_sesion(request):

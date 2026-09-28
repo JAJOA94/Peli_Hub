@@ -1,16 +1,22 @@
-from django.contrib import admin
-from .models import Pelicula, EstadoPelicula, Perfil
+from django.contrib import admin   
+from .models import Pelicula, EstadoPelicula, Calificacion, Perfil
 
 @admin.register(Pelicula)
 class PeliculaAdmin(admin.ModelAdmin):
     # Columnas visibles en la lista
-    list_display = ('titulo', 'director', 'anio_estreno', 'genero', 'puntuacion', 'fecha_agregada')
+    list_display = ('titulo', 'director', 'anio_estreno', 'genero', 'calificacion_promedio', 'total_calificaciones', 'fecha_agregada')
     # Filtros laterales
     list_filter = ('genero', 'anio_estreno', 'puntuacion')
     # Barra de búsqueda
     search_fields = ('titulo', 'director', 'sinopsis')
     # Jerarquía por fechas para navegación rápida
     date_hierarchy = 'fecha_agregada'
+
+@admin.register(Calificacion)
+class CalificacionAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'pelicula', 'puntuacion', 'fecha')
+    list_filter = ('puntuacion', 'fecha')
+    search_fields = ('usuario__username', 'pelicula__titulo', 'comentario')
 
 @admin.register(EstadoPelicula)
 class EstadoPeliculaAdmin(admin.ModelAdmin):

@@ -30,6 +30,8 @@ class Pelicula(models.Model):
     puntuacion = models.IntegerField(choices=PUNTUACIONES, null=True, blank=True)
     portada = models.ImageField(upload_to='portadas/', blank=True, null=True)
     fecha_agregada = models.DateTimeField(default=timezone.now)
+    calificacion_promedio = models.FloatField(default=0.0)
+    total_calificaciones = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ['-anio_estreno', '-fecha_agregada']
@@ -41,6 +43,15 @@ class Pelicula(models.Model):
 
     def get_absolute_url(self):
         return reverse('lista_peliculas')
+
+    def recalcular_promedio(self):
+        agregados = self.calificaciones.aggregate(
+            promedio=models.Avg('puntuacion'),
+            total=models.Count('id'),
+        )
+        self.calificacion_promedio = round(agregados['promedio'] or 0.0, 2)
+        self.total_calificaciones = agregados['total'] or 0
+        self.save(update_fields=['calificacion_promedio', 'total_calificaciones'])
 
 
 class EstadoPelicula(models.Model):
@@ -74,6 +85,32 @@ class EstadoPelicula(models.Model):
     def __str__(self):
         return f'{self.usuario.username} — {self.pelicula.titulo}: {self.get_estado_display()}'
 
+class Calificacion(models.Model):
+
+    PUNTUACIONES = [(i, str(i)) for i in range(1, 6)]
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='calificaciones',
+    )
+    pelicula = models.ForeignKey(
+        Pelicula,
+        on_delete=models.CASCADE,
+        related_name='calificaciones',
+    )
+    puntuacion = models.IntegerField(choices=PUNTUACIONES)
+    comentario = models.TextField(blank=True, default='')
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('usuario', 'pelicula')
+        ordering = ['-fecha']
+        verbose_name = 'calificación'
+        verbose_name_plural = 'calificaciones'
+
+    def __str__(self):
+        return f'{self.usuario.username} → {self.pelicula.titulo}: {self.puntuacion}/5'
 
 class Perfil(models.Model):
     usuario = models.OneToOneField(
@@ -89,3 +126,4 @@ class Perfil(models.Model):
 
     def __str__(self):
         return self.usuario.username
+
