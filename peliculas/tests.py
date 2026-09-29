@@ -1,7 +1,17 @@
+from django import forms
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 
-from .models import EstadoPelicula, Pelicula
+from .forms import CalificacionForm
+from .models import (
+    Actor,
+    Calificacion,
+    Director,
+    EstadoPelicula,
+    HistorialVisualizacion,
+    ListaPersonalizada,
+    Pelicula,
+)
 
 
 @override_settings(ALLOWED_HOSTS=['testserver'])
@@ -217,6 +227,37 @@ class PeliculasTests(TestCase):
         self.assertEqual(response.status_code, 405)
         response = self.client.post('/peliculas/logout/')
         self.assertRedirects(response, '/')
+
+
+class ModelosRequeridosTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.admin = User.objects.create_superuser(
+            username='admin_modelos', password='ClaveSegura123!'
+        )
+        self.normal = User.objects.create_user(
+            username='usuario_modelos', password='ClaveSegura123!'
+        )
+
+    def test_existencia_de_modelos_y_campos_requeridos(self):
+        self.assertTrue(hasattr(Director, 'nombre'))
+        self.assertTrue(hasattr(Actor, 'nombre'))
+        self.assertTrue(hasattr(Actor, 'peliculas'))
+        self.assertTrue(hasattr(Pelicula, 'duracion'))
+        self.assertTrue(hasattr(Pelicula, 'imagen'))
+        self.assertTrue(hasattr(Pelicula, 'visualizaciones'))
+        self.assertTrue(hasattr(Calificacion, 'usuario'))
+        self.assertTrue(hasattr(Calificacion, 'pelicula'))
+        self.assertTrue(hasattr(HistorialVisualizacion, 'usuario'))
+        self.assertTrue(hasattr(HistorialVisualizacion, 'pelicula'))
+        self.assertTrue(hasattr(ListaPersonalizada, 'usuario'))
+        self.assertTrue(hasattr(ListaPersonalizada, 'es_privada'))
+        self.assertTrue(hasattr(ListaPersonalizada, 'peliculas'))
+
+    def test_formulario_de_calificacion_usa_estrellas(self):
+        form = CalificacionForm()
+        self.assertIsInstance(form.fields['puntuacion'].widget, forms.RadioSelect)
+        self.assertIn('type="radio"', form['puntuacion'].as_widget())
 
     def test_panel_admin_solo_superusuario(self):
         self.client.force_login(self.normal)

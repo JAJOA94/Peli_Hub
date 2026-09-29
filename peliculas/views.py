@@ -9,7 +9,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .forms import CalificacionForm, PeliculaForm, RegistroForm
-from .models import Calificacion, EstadoPelicula, Pelicula
+from .models import Calificacion, EstadoPelicula, HistorialVisualizacion, ListaPersonalizada, Pelicula
 
 
 def _redireccion_segura(request, por_defecto):
@@ -145,10 +145,16 @@ def ver_pelicula(request, id):
                 pelicula=pelicula,
                 defaults={'estado': 'progreso'},
             )
+
+        HistorialVisualizacion.objects.update_or_create(
+            usuario=request.user,
+            pelicula=pelicula,
+            defaults={'progreso': 1, 'duracion_vista': 0},
+        )
     except Exception as e:
         messages.error(request, 'Error de conexión al registrar tu avance.')
         return redirect('lista_peliculas')
-    
+
     calificacion_usuario = Calificacion.objects.filter(
         usuario=request.user, pelicula=pelicula
     ).first()
@@ -209,6 +215,22 @@ def calificar_pelicula(request, id):
         messages.error(request, 'Revisa tu calificación: debe ser un puntaje entre 1 y 5.')
 
     return redirect('ver_pelicula', id=pelicula.id)
+
+
+@login_required
+def historial_visualizacion(request):
+    historial = HistorialVisualizacion.objects.filter(
+        usuario=request.user
+    ).select_related('pelicula').order_by('-fecha_visualizacion')
+    return render(request, 'peliculas/historial.html', {'historial': historial})
+
+
+@login_required
+def listas_personalizadas(request):
+    listas = ListaPersonalizada.objects.filter(
+        usuario=request.user
+    ).prefetch_related('peliculas').order_by('-fecha_creacion')
+    return render(request, 'peliculas/listas.html', {'listas': listas})
 
 
 def iniciar_sesion(request):

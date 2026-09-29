@@ -26,6 +26,8 @@ body {
     background: #0b0b0b;
     background-image: radial-gradient(circle at 75% 0%, rgba(224, 164, 88, .16), transparent 31rem), linear-gradient(135deg, #090909 0%, #111 52%, #080808 100%);
     font-family: 'Manrope', sans-serif;
+    display: flex;
+    flex-direction: column;
 }
 
 header {
@@ -378,8 +380,11 @@ form select {
     align-items: center;
     display: flex;
     justify-content: center;
+    width: 100%;
+    max-width: none;
     min-height: calc(100vh - 120px);
     padding: 52px 20px 64px;
+    flex: 1;
 }
 
 .auth-card {
@@ -390,6 +395,7 @@ form select {
     width: min(100%, 560px);
     padding: 32px 28px 28px;
     margin: 0 auto;
+    align-self: center;
 }
 
 .auth-header {
@@ -896,6 +902,80 @@ button.btn-logout:hover {
 
 .btn-terminar:hover {
     background: var(--accent-dark);
+}
+
+.form-calificacion {
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+}
+
+.form-calificacion h3 {
+    margin: 0 0 14px;
+    color: var(--ink);
+    font-size: 1.05rem;
+}
+
+.star-rating {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 16px;
+}
+
+.star-choice {
+    align-items: center;
+    cursor: pointer;
+    display: inline-flex;
+    justify-content: center;
+    position: relative;
+}
+
+.star-choice input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.star-icon {
+    color: #4a4a4a;
+    font-size: clamp(2rem, 3vw, 2.4rem);
+    line-height: 1;
+    transition: transform .15s ease, color .15s ease;
+}
+
+.star-choice.selected .star-icon,
+.star-choice:hover .star-icon,
+.star-choice input:focus-visible + .star-icon {
+    color: var(--accent);
+    transform: translateY(-2px) scale(1.05);
+}
+
+.campo-comentario textarea {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--ink);
+    font: inherit;
+    min-height: 90px;
+    padding: 12px 14px;
+    resize: vertical;
+    width: 100%;
+}
+
+.rating-stars {
+    display: inline-flex;
+    gap: 4px;
+    vertical-align: middle;
+}
+
+.mini-star {
+    color: #4a4a4a;
+    font-size: 1rem;
+}
+
+.mini-star.active {
+    color: var(--accent);
 }
 
 @media (max-width: 640px) {

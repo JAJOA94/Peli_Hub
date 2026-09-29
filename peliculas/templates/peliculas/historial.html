@@ -1,0 +1,38 @@
+{% extends 'peliculas/base.html' %}
+
+{% block titulo %}Mi historial - PeliHub{% endblock %}
+
+{% block contenido %}
+<main>
+    <section class="admin-hero">
+        <span class="kicker">Tu actividad</span>
+        <h2>Mi historial</h2>
+        <p>Revisa las películas que has visto y tu avance en cada una.</p>
+    </section>
+
+    {% if historial %}
+        <div class="peliculas-grid">
+            {% for item in historial %}
+                <div class="pelicula">
+                    {% if item.pelicula.portada %}
+                        <img class="portada" src="{{ item.pelicula.portada.url }}" alt="{{ item.pelicula.titulo }}">
+                    {% endif %}
+                    <h3>{{ item.pelicula.titulo }}</h3>
+                    <div class="info">
+                        <strong>Director:</strong> <span class="dato">{{ item.pelicula.director }}</span><br>
+                        <strong>Progreso:</strong> <span class="dato">{{ item.progreso }}%</span><br>
+                        <strong>Última visita:</strong> <span class="dato">{{ item.fecha_visualizacion|date:'d/m/Y' }}</span>
+                    </div>
+                    <div class="acciones">
+                        <a class="btn-action editar" href="{% url 'ver_pelicula' item.pelicula.id %}">Ver</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="sin-peliculas">
+            <p>Aún no has visto ninguna película.</p>
+        </div>
+    {% endif %}
+</main>
+{% endblock %}

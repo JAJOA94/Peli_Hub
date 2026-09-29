@@ -16,6 +16,9 @@
                     {% if user.is_superuser %}
                         <a class="btn-agregar" href="{% url 'crear_pelicula' %}">+ Agregar película</a>
                         <a class="btn-admin" href="{% url 'panel_admin' %}">Panel admin</a>
+                    {% else %}
+                        <a class="btn-secondary" href="{% url 'historial_visualizacion' %}">Mi historial</a>
+                        <a class="btn-secondary" href="{% url 'listas_personalizadas' %}">Mis listas</a>
                     {% endif %}
                     <form method="post" action="{% url 'logout' %}" class="form-logout">
                         {% csrf_token %}

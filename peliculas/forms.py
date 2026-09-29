@@ -23,6 +23,13 @@ class PeliculaForm(forms.ModelForm):
         }
 
 class CalificacionForm(forms.ModelForm):
+    puntuacion = forms.TypedChoiceField(
+        choices=[(i, str(i)) for i in range(1, 6)],
+        coerce=int,
+        widget=forms.RadioSelect,
+        label='Tu calificación',
+    )
+
     class Meta:
         model = Calificacion
         fields = ['puntuacion', 'comentario']

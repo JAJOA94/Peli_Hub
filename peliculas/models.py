@@ -4,6 +4,38 @@ from django.urls import reverse
 from django.utils import timezone
 
 
+class Director(models.Model):
+    """Persona responsable de la dirección de una película."""
+
+    nombre = models.CharField(max_length=150)
+    nacionalidad = models.CharField(max_length=100, blank=True, default='')
+    biografia = models.TextField(blank=True, default='')
+
+    class Meta:
+        ordering = ['nombre']
+        verbose_name = 'director'
+        verbose_name_plural = 'directores'
+
+    def __str__(self):
+        return self.nombre
+
+
+class Actor(models.Model):
+    """Actor asociado a una o varias películas."""
+
+    nombre = models.CharField(max_length=150)
+    nacionalidad = models.CharField(max_length=100, blank=True, default='')
+    biografia = models.TextField(blank=True, default='')
+
+    class Meta:
+        ordering = ['nombre']
+        verbose_name = 'actor'
+        verbose_name_plural = 'actores'
+
+    def __str__(self):
+        return self.nombre
+
+
 class Pelicula(models.Model):
     """Película del catálogo, gestionada únicamente por los administradores."""
 
@@ -29,9 +61,13 @@ class Pelicula(models.Model):
     sinopsis = models.TextField(blank=True, default='')
     puntuacion = models.IntegerField(choices=PUNTUACIONES, null=True, blank=True)
     portada = models.ImageField(upload_to='portadas/', blank=True, null=True)
+    imagen = models.ImageField(upload_to='portadas/', blank=True, null=True)
+    duracion = models.PositiveIntegerField(default=0, help_text='Duración en minutos')
     fecha_agregada = models.DateTimeField(default=timezone.now)
     calificacion_promedio = models.FloatField(default=0.0)
     total_calificaciones = models.PositiveIntegerField(default=0)
+    visualizaciones = models.PositiveIntegerField(default=0)
+    actores = models.ManyToManyField(Actor, blank=True, related_name='peliculas')
 
     class Meta:
         ordering = ['-anio_estreno', '-fecha_agregada']
@@ -52,6 +88,59 @@ class Pelicula(models.Model):
         self.calificacion_promedio = round(agregados['promedio'] or 0.0, 2)
         self.total_calificaciones = agregados['total'] or 0
         self.save(update_fields=['calificacion_promedio', 'total_calificaciones'])
+
+    def registrar_visualizacion(self):
+        self.visualizaciones += 1
+        self.save(update_fields=['visualizaciones'])
+
+
+class HistorialVisualizacion(models.Model):
+    """Registro del historial de visualización de cada usuario."""
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='historial_visualizacion',
+    )
+    pelicula = models.ForeignKey(
+        Pelicula,
+        on_delete=models.CASCADE,
+        related_name='historial_visualizacion',
+    )
+    fecha_visualizacion = models.DateTimeField(default=timezone.now)
+    duracion_vista = models.PositiveIntegerField(default=0, help_text='Segundos vistos')
+    progreso = models.PositiveIntegerField(default=0, help_text='Porcentaje de avance')
+
+    class Meta:
+        ordering = ['-fecha_visualizacion']
+        verbose_name = 'historial de visualización'
+        verbose_name_plural = 'historiales de visualización'
+
+    def __str__(self):
+        return f'{self.usuario.username} — {self.pelicula.titulo}'
+
+
+class ListaPersonalizada(models.Model):
+    """Lista personalizada creada por un usuario."""
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='listas_personalizadas',
+    )
+    nombre = models.CharField(max_length=120)
+    descripcion = models.TextField(blank=True, default='')
+    es_privada = models.BooleanField(default=True)
+    peliculas = models.ManyToManyField(Pelicula, related_name='en_listas_personalizadas', blank=True)
+    fecha_creacion = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-fecha_creacion']
+        verbose_name = 'lista personalizada'
+        verbose_name_plural = 'listas personalizadas'
+
+    def __str__(self):
+        return f'{self.usuario.username}: {self.nombre}'
 
 
 class EstadoPelicula(models.Model):

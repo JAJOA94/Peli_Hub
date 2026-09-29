@@ -1,0 +1,50 @@
+{% extends 'peliculas/base.html' %}
+
+{% block titulo %}Mis listas - PeliHub{% endblock %}
+
+{% block contenido %}
+<main>
+    <section class="admin-hero">
+        <span class="kicker">Tus colecciones</span>
+        <h2>Mis listas</h2>
+        <p>Organiza tus películas favoritas, pendientes o en progreso.</p>
+    </section>
+
+    {% if listas %}
+        {% for lista in listas %}
+            <section class="admin-actions" style="margin-bottom: 22px;">
+                <h3>{{ lista.nombre }}</h3>
+                <p>{{ lista.descripcion|default:'Sin descripción' }}</p>
+                <span class="estado-badge {% if lista.es_privada %}badge-pendiente{% else %}badge-vista{% endif %}">
+                    {% if lista.es_privada %}Privada{% else %}Pública{% endif %}
+                </span>
+
+                {% if lista.peliculas.all %}
+                    <div class="peliculas-grid">
+                        {% for pelicula in lista.peliculas.all %}
+                            <div class="pelicula">
+                                {% if pelicula.portada %}
+                                    <img class="portada" src="{{ pelicula.portada.url }}" alt="{{ pelicula.titulo }}">
+                                {% endif %}
+                                <h3>{{ pelicula.titulo }}</h3>
+                                <div class="info">
+                                    <strong>Director:</strong> <span class="dato">{{ pelicula.director }}</span><br>
+                                    <strong>Año:</strong> <span class="dato">{{ pelicula.anio_estreno }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="sin-peliculas">
+                        <p>Esta lista todavía no tiene películas.</p>
+                    </div>
+                {% endif %}
+            </section>
+        {% endfor %}
+    {% else %}
+        <div class="sin-peliculas">
+            <p>Aún no has creado ninguna lista personalizada.</p>
+        </div>
+    {% endif %}
+</main>
+{% endblock %}

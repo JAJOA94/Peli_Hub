@@ -21,7 +21,13 @@
                 <p class="reproductor-meta">
                     <strong>Director:</strong> {{ pelicula.director }}
                     {% if pelicula.total_calificaciones %}
-                        · <strong>Calificación usuarios:</strong> {{ pelicula.calificacion_promedio }}/5 ({{ pelicula.total_calificaciones }} voto{{ pelicula.total_calificaciones|pluralize }})
+                        · <strong>Calificación usuarios:</strong>
+                        <span class="rating-stars" aria-label="{{ pelicula.calificacion_promedio }} de 5 estrellas">
+                            {% for i in '12345' %}
+                                <span class="mini-star {% if forloop.counter <= pelicula.calificacion_promedio|floatformat:0 %}active{% endif %}">★</span>
+                            {% endfor %}
+                        </span>
+                        ({{ pelicula.total_calificaciones }} voto{{ pelicula.total_calificaciones|pluralize }})
                     {% else %}
                         · <strong>Calificación usuarios:</strong> Aún sin votos
                     {% endif %}
@@ -41,7 +47,43 @@
                     <h3>{% if calificacion_usuario %}Tu calificación{% else %}Calificar esta película{% endif %}</h3>
                     <form method="POST" action="{% url 'calificar_pelicula' pelicula.id %}">
                         {% csrf_token %}
-                        {{ form_calificacion.as_p }}
+                        <div class="star-rating" data-rating="0">
+                            {% for radio in form_calificacion.puntuacion %}
+                                <label class="star-choice">
+                                    {{ radio.tag }}
+                                    <span class="star-icon" aria-hidden="true">★</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                document.querySelectorAll('.star-rating').forEach(function (wrapper) {
+                                    var inputs = Array.from(wrapper.querySelectorAll('input[type="radio"]'));
+
+                                    function updateStars() {
+                                        var checkedIndex = inputs.findIndex(function (input) {
+                                            return input.checked;
+                                        });
+
+                                        inputs.forEach(function (input, index) {
+                                            var choice = input.closest('.star-choice');
+                                            if (choice) {
+                                                choice.classList.toggle('selected', index <= checkedIndex);
+                                            }
+                                        });
+                                    }
+
+                                    inputs.forEach(function (input) {
+                                        input.addEventListener('change', updateStars);
+                                    });
+
+                                    updateStars();
+                                });
+                            });
+                        </script>
+                        <div class="campo-comentario">
+                            {{ form_calificacion.comentario }}
+                        </div>
                         <button type="submit" class="btn-terminar">
                             {% if calificacion_usuario %}Actualizar calificación{% else %}Enviar calificación{% endif %}
                         </button>
