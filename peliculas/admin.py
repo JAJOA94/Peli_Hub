@@ -15,11 +15,12 @@ from .models import (
 @admin.register(Pelicula)
 class PeliculaAdmin(admin.ModelAdmin):
     list_display = (
-        'titulo', 'director', 'anio_estreno', 'genero',
+        'titulo', 'mostrar_en_banner', 'director', 'anio_estreno', 'genero',
         'duracion', 'calificacion_promedio', 'total_calificaciones',
         'visualizaciones', 'fecha_agregada'
     )
-    list_filter = ('genero', 'anio_estreno', 'puntuacion')
+    list_editable = ('mostrar_en_banner',)
+    list_filter = ('mostrar_en_banner', 'genero', 'anio_estreno', 'puntuacion')
     search_fields = ('titulo', 'director', 'sinopsis')
     filter_horizontal = ('actores',)
     date_hierarchy = 'fecha_agregada'

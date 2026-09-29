@@ -16,6 +16,7 @@ class PeliculaForm(forms.ModelForm):
             'sinopsis',
             'puntuacion',
             'portada',
+            'mostrar_en_banner',
             'video_fondo_url',
         ]
         widgets = {

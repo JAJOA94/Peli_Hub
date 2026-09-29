@@ -8,20 +8,12 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.db import transaction
 from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
-from django.templatetags.static import static
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .forms import CalificacionForm, PerfilForm, PeliculaForm, RegistroForm, UsuarioPerfilForm
 from .models import Calificacion, EstadoPelicula, HistorialVisualizacion, ListaPersonalizada, Pelicula
-
-
-HERO_VIDEO_PREDETERMINADOS = (
-    'peliculas/videos/hero/sala-cine.mp4',
-    'peliculas/videos/hero/ambiente-cyberpunk.mp4',
-    'peliculas/videos/hero/escena-nocturna-auto.mp4',
-)
 
 
 def _redireccion_segura(request, por_defecto):
@@ -60,21 +52,13 @@ def lista_peliculas(request):
         peliculas = list(peliculas)
 
         peliculas_destacadas = list(
-            Pelicula.objects.filter(portada__isnull=False)
+            Pelicula.objects.filter(
+                mostrar_en_banner=True,
+                portada__isnull=False,
+            )
             .exclude(portada='')
             .order_by('-calificacion_promedio', '-visualizaciones', '-anio_estreno')[:5]
         )
-        if not peliculas_destacadas:
-            peliculas_destacadas = list(
-                Pelicula.objects.order_by('-calificacion_promedio', '-anio_estreno')[:5]
-            )
-        for indice, pelicula in enumerate(peliculas_destacadas):
-            video_predeterminado = (
-                static(HERO_VIDEO_PREDETERMINADOS[indice])
-                if indice < len(HERO_VIDEO_PREDETERMINADOS)
-                else ''
-            )
-            pelicula.hero_video_url = pelicula.video_fondo_url or video_predeterminado
 
         ESTADO_DISPLAY = {
             'pendiente': 'Pendiente',
@@ -151,7 +135,6 @@ def lista_peliculas(request):
             'top_mensual': top_mensual,
             'peliculas_destacadas': peliculas_destacadas,
             'pelicula_destacada': peliculas_destacadas[0] if peliculas_destacadas else None,
-            'hero_tiene_video': any(p.hero_video_url for p in peliculas_destacadas),
         })
     except Exception as e:
         messages.error(request, 'Error de conexión al cargar el catálogo de películas.')

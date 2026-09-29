@@ -86,14 +86,25 @@ class PeliculasTests(TestCase):
         self.assertContains(response, 'Película antigua')
         self.assertContains(response, 'Película reciente')
 
-    def test_hero_incluye_clips_locales_de_fondo(self):
+    def test_catalogo_muestra_solo_portadas_seleccionadas_y_sin_video(self):
+        seleccionada = Pelicula.objects.create(
+            titulo='Portada seleccionada',
+            director='Directora destacada',
+            anio_estreno=2025,
+            genero='drama',
+            portada='portadas/seleccionada.jpg',
+            mostrar_en_banner=True,
+        )
         self.client.force_login(self.normal)
 
         response = self.client.get('/peliculas/')
 
-        self.assertContains(response, '/static/peliculas/videos/hero/sala-cine.mp4')
-        self.assertContains(response, '/static/peliculas/videos/hero/ambiente-cyberpunk.mp4')
-        self.assertContains(response, '/static/peliculas/videos/hero/escena-nocturna-auto.mp4')
+        self.assertEqual(
+            [pelicula.pk for pelicula in response.context['peliculas_destacadas']],
+            [seleccionada.pk],
+        )
+        self.assertContains(response, '/media/portadas/seleccionada.jpg')
+        self.assertNotContains(response, 'videos/hero/')
 
     def test_lista_ordenada_por_anio_descendente(self):
         self.client.force_login(self.normal)

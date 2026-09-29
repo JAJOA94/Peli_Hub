@@ -5,7 +5,7 @@
 {% block contenido %}
 <main>
     {% if not busqueda and not genero_seleccionado and not anio %}
-    <section class="hero" data-hero>
+    <section class="hero hero--catalogo" data-hero>
         <div class="hero-backdrop" aria-hidden="true">
             {% for destacada in peliculas_destacadas %}
                 <div class="hero-slide{% if forloop.first %} is-active{% endif %}"
@@ -19,11 +19,6 @@
                      data-add-url="{% url 'agregar_a_mi_lista' destacada.id %}">
                     {% if destacada.portada %}
                         <img class="hero-poster" src="{{ destacada.portada.url }}" alt="" {% if not forloop.first %}loading="lazy"{% endif %}>
-                    {% endif %}
-                    {% if destacada.hero_video_url %}
-                        <video class="hero-video" muted playsinline loop preload="none" {% if destacada.portada %}poster="{{ destacada.portada.url }}"{% endif %}>
-                            <source src="{{ destacada.hero_video_url }}" type="video/mp4">
-                        </video>
                     {% endif %}
                 </div>
             {% endfor %}
@@ -68,9 +63,6 @@
                         <button type="button" class="hero-indicator{% if forloop.first %} is-active{% endif %}" data-hero-indicator="{{ forloop.counter0 }}" aria-label="Mostrar {{ destacada.titulo }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"></button>
                     {% endfor %}
                 </div>
-                <button type="button" class="hero-audio" data-hero-audio {% if not hero_tiene_video %}disabled{% endif %} aria-pressed="false" aria-label="Activar audio del video">
-                    <span data-hero-audio-label>{% if hero_tiene_video %}Activar audio{% else %}Video no disponible{% endif %}</span>
-                </button>
             </div>
         {% endif %}
     </section>
@@ -259,26 +251,18 @@
         var duration = hero.querySelector('[data-hero-duration]');
         var watchLink = hero.querySelector('[data-hero-watch]');
         var listForm = hero.querySelector('[data-hero-list-form]');
-        var audioButton = hero.querySelector('[data-hero-audio]');
-        var audioLabel = hero.querySelector('[data-hero-audio-label]');
         var activeIndex = 0;
-        var muted = true;
         var carouselTimer;
         var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         function showSlide(index) {
             activeIndex = index;
             var activeSlide = slides[activeIndex];
-            var video = activeSlide.querySelector('video');
 
             slides.forEach(function (slide, slideIndex) {
                 var isActive = slideIndex === activeIndex;
                 slide.classList.toggle('is-active', isActive);
                 slide.setAttribute('aria-hidden', String(!isActive));
-                var slideVideo = slide.querySelector('video');
-                if (slideVideo && !isActive) {
-                    slideVideo.pause();
-                }
             });
 
             if (title) title.textContent = activeSlide.dataset.title;
@@ -303,25 +287,6 @@
             if (currentCount) currentCount.textContent = String(activeIndex + 1).padStart(2, '0');
             if (totalCount) totalCount.textContent = String(slides.length).padStart(2, '0');
 
-            if (audioButton) {
-                audioButton.disabled = !video;
-                audioButton.setAttribute('aria-pressed', String(Boolean(video) && !muted));
-                audioButton.setAttribute(
-                    'aria-label',
-                    video ? (muted ? 'Activar audio del video' : 'Silenciar video') : 'Video no disponible'
-                );
-                if (audioLabel) {
-                    audioLabel.textContent = video
-                        ? (muted ? 'Activar audio' : 'Silenciar')
-                        : 'Video no disponible';
-                }
-            }
-
-            if (video) {
-                video.muted = muted;
-                var playback = video.play();
-                if (playback && playback.catch) playback.catch(function () {});
-            }
         }
 
         function startCarousel() {
@@ -345,32 +310,11 @@
             });
         });
 
-        if (audioButton) {
-            audioButton.addEventListener('click', function () {
-                var video = slides[activeIndex].querySelector('video');
-                if (!video) return;
-                muted = !muted;
-                video.muted = muted;
-                audioButton.setAttribute('aria-pressed', String(!muted));
-                audioButton.setAttribute('aria-label', muted ? 'Activar audio del video' : 'Silenciar video');
-                if (audioLabel) audioLabel.textContent = muted ? 'Activar audio' : 'Silenciar';
-            });
-        }
-
         document.addEventListener('visibilitychange', function () {
             if (document.hidden) {
                 window.clearInterval(carouselTimer);
-                slides.forEach(function (slide) {
-                    var video = slide.querySelector('video');
-                    if (video) video.pause();
-                });
             } else {
                 startCarousel();
-                var activeVideo = slides[activeIndex].querySelector('video');
-                if (activeVideo) {
-                    var playback = activeVideo.play();
-                    if (playback && playback.catch) playback.catch(function () {});
-                }
             }
         });
     }

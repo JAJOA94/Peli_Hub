@@ -61,6 +61,10 @@ class Pelicula(models.Model):
     sinopsis = models.TextField(blank=True, default='')
     puntuacion = models.IntegerField(choices=PUNTUACIONES, null=True, blank=True)
     portada = models.ImageField(upload_to='portadas/', blank=True, null=True)
+    mostrar_en_banner = models.BooleanField(
+        default=False,
+        help_text='Incluye esta película en el banner del catálogo.',
+    )
     imagen = models.ImageField(upload_to='portadas/', blank=True, null=True)
     video_fondo_url = models.URLField(
         blank=True,

@@ -1045,6 +1045,28 @@ button.btn-logout:hover {
     filter: saturate(.82);
 }
 
+.hero--catalogo .hero-poster {
+    border-radius: 6px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .55);
+    filter: none;
+    height: 88%;
+    inset: 6% clamp(28px, 9vw, 140px) auto auto;
+    max-width: min(38vw, 440px);
+    object-fit: contain;
+    object-position: center;
+    width: auto;
+}
+
+.hero--catalogo .hero-shade {
+    background:
+        linear-gradient(90deg, #0b0b0b 0%, rgba(11, 11, 11, .94) 32%, rgba(11, 11, 11, .56) 57%, rgba(11, 11, 11, .08) 100%),
+        linear-gradient(0deg, #0b0b0b 0%, rgba(11, 11, 11, .86) 7%, transparent 40%);
+}
+
+.hero--video .hero-video {
+    filter: saturate(.84);
+}
+
 .hero-video {
     opacity: 0;
     transition: opacity .8s ease;
@@ -1269,6 +1291,18 @@ button.btn-logout:hover {
     .hero .hero-title {
         font-size: 3.4rem;
         margin: 12px 0 14px;
+    }
+
+    .hero--catalogo .hero-poster {
+        height: 48%;
+        inset: 4% 9% auto auto;
+        max-width: 65vw;
+    }
+
+    .hero--catalogo .hero-shade {
+        background:
+            linear-gradient(0deg, #0b0b0b 0%, rgba(11, 11, 11, .95) 24%, rgba(11, 11, 11, .32) 65%, rgba(0, 0, 0, .08) 100%),
+            linear-gradient(90deg, rgba(0, 0, 0, .3), transparent);
     }
 
     .hero .hero-synopsis {

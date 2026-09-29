@@ -4,17 +4,122 @@
 
 {% block contenido %}
 <main>
-    <section class="hero">
-        <div class="hero-slide"></div>
-        <div class="hero-slide"></div>
-        <div class="hero-slide"></div>
+    <section class="hero hero--video" data-home-hero>
+        <div class="hero-backdrop" aria-hidden="true">
+            {% for video in videos_inicio %}
+                <div class="hero-slide{% if forloop.first %} is-active{% endif %}" data-home-slide>
+                    <video class="hero-video" muted playsinline loop preload="{% if forloop.first %}auto{% else %}none{% endif %}" {% if forloop.first %}autoplay{% endif %}>
+                        <source src="{{ video }}" type="video/mp4">
+                    </video>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="hero-shade" aria-hidden="true"></div>
         <div class="hero-content">
-            <h2>Historias que se quedan contigo.</h2>
-            <p>Explora las películas disponibles</p>
+            <span class="kicker">PELIHUB · CINE PARA CADA MOMENTO</span>
+            <h2 class="hero-title">Tu próxima película empieza aquí.</h2>
+            <p class="hero-synopsis">Descubre nuevas historias, guarda tus favoritas y encuentra algo para cada noche.</p>
             <div class="hero-cta">
-                <a class="btn-secondary" href="{% url 'login' %}">Iniciar sesión</a>
+                <a class="hero-button hero-button-primary" href="{% url 'login' %}">▶ Iniciar sesión</a>
+                <a class="hero-button hero-button-secondary" href="{% url 'registro' %}">Crear cuenta</a>
             </div>
+        </div>
+        <div class="hero-controls">
+            <span class="hero-slide-count"><span data-home-current>01</span> / <span>{{ videos_inicio|length|stringformat:'02d' }}</span></span>
+            <div class="hero-indicators" role="group" aria-label="Seleccionar video de portada">
+                {% for video in videos_inicio %}
+                    <button type="button" class="hero-indicator{% if forloop.first %} is-active{% endif %}" data-home-indicator="{{ forloop.counter0 }}" aria-label="Mostrar video {{ forloop.counter }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"></button>
+                {% endfor %}
+            </div>
+            <button type="button" class="hero-audio" data-home-audio aria-pressed="false" aria-label="Activar audio">
+                <span data-home-audio-label>Activar audio</span>
+            </button>
         </div>
     </section>
 </main>
+<script>
+    (function () {
+        var hero = document.querySelector('[data-home-hero]');
+        if (!hero) return;
+
+        var slides = Array.from(hero.querySelectorAll('[data-home-slide]'));
+        var indicators = Array.from(hero.querySelectorAll('[data-home-indicator]'));
+        var current = hero.querySelector('[data-home-current]');
+        var audioButton = hero.querySelector('[data-home-audio]');
+        var audioLabel = hero.querySelector('[data-home-audio-label]');
+        var activeIndex = 0;
+        var muted = true;
+        var timer;
+        var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function showSlide(index) {
+            activeIndex = index;
+            slides.forEach(function (slide, slideIndex) {
+                var video = slide.querySelector('video');
+                var active = slideIndex === activeIndex;
+                slide.classList.toggle('is-active', active);
+                if (video) {
+                    video.muted = muted;
+                    if (active) {
+                        var playback = video.play();
+                        if (playback && playback.catch) playback.catch(function () {});
+                    } else {
+                        video.pause();
+                    }
+                }
+            });
+            indicators.forEach(function (indicator, indicatorIndex) {
+                var active = indicatorIndex === activeIndex;
+                indicator.classList.toggle('is-active', active);
+                indicator.setAttribute('aria-pressed', String(active));
+            });
+            if (current) current.textContent = String(activeIndex + 1).padStart(2, '0');
+            if (audioButton) audioButton.setAttribute('aria-pressed', String(!muted));
+            if (audioButton) audioButton.setAttribute('aria-label', muted ? 'Activar audio' : 'Silenciar audio');
+            if (audioLabel) audioLabel.textContent = muted ? 'Activar audio' : 'Silenciar audio';
+        }
+
+        function startTimer() {
+            window.clearInterval(timer);
+            if (slides.length > 1 && !reducedMotion) {
+                timer = window.setInterval(function () {
+                    showSlide((activeIndex + 1) % slides.length);
+                }, 8000);
+            }
+        }
+
+        if (!slides.length) {
+            if (audioButton) audioButton.disabled = true;
+            return;
+        }
+
+        showSlide(0);
+        startTimer();
+
+        indicators.forEach(function (indicator, index) {
+            indicator.addEventListener('click', function () {
+                showSlide(index);
+                startTimer();
+            });
+        });
+
+        audioButton.addEventListener('click', function () {
+            muted = !muted;
+            showSlide(activeIndex);
+        });
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) {
+                window.clearInterval(timer);
+                slides.forEach(function (slide) {
+                    var video = slide.querySelector('video');
+                    if (video) video.pause();
+                });
+            } else {
+                startTimer();
+                showSlide(activeIndex);
+            }
+        });
+    }());
+</script>
 {% endblock %}
