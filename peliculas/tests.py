@@ -195,6 +195,9 @@ class PeliculasTests(TestCase):
 
         response = self.client.get('/peliculas/')
 
+        self.assertContains(response, 'class="top10-list"')
+        self.assertContains(response, 'class="top10-number"')
+        self.assertContains(response, 'class="top10-placeholder"')
         self.assertEqual(
             response.context['top_historico'][0].pk,
             self.pelicula_antigua.pk,

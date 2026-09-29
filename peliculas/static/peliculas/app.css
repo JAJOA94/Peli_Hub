@@ -270,15 +270,12 @@ body > h2 {
     margin: -16px 0 22px;
 }
 
-.rankings-grid {
-    display: grid;
-    gap: 32px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin: 0 0 42px;
+.rankings {
+    margin: 0 0 44px;
 }
 
 .ranking-panel {
-    border-top: 2px solid var(--accent);
+    margin-bottom: 36px;
     min-width: 0;
 }
 
@@ -297,54 +294,180 @@ body > h2 {
     margin: 0;
 }
 
-.ranking-heading span,
-.ranking-list {
+.ranking-heading span {
     color: var(--muted);
     font-size: .82rem;
 }
 
-.ranking-list {
+.top10-list {
+    align-items: flex-start;
+    display: flex;
+    gap: 18px;
     list-style: none;
     margin: 0;
-    padding: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding: 6px 8px 14px;
+    scrollbar-color: var(--accent) var(--panel-soft);
+    scrollbar-width: thin;
 }
 
-.ranking-list li {
-    align-items: center;
-    border-top: 1px solid var(--line);
+.top10-item {
+    flex: 0 0 270px;
+    height: 282px;
+    position: relative;
+}
+
+.top10-number {
+    color: transparent;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 270px;
+    left: 0;
+    line-height: .86;
+    position: absolute;
+    text-align: left;
+    top: -4px;
+    -webkit-text-stroke: 2px rgba(210, 210, 210, .48);
+    z-index: 0;
+}
+
+.top10-poster {
+    background: var(--panel-soft);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: block;
+    height: 236px;
+    margin-left: 56px;
+    overflow: hidden;
+    position: relative;
+    text-decoration: none;
+    width: 164px;
+    z-index: 1;
+}
+
+.top10-poster img {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+.top10-placeholder {
+    align-items: flex-start;
+    background: linear-gradient(150deg, #773927, #1a1718 72%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: flex-end;
+    padding: 14px 12px 44px;
+    width: 100%;
+}
+
+.top10-item:nth-child(3n + 2) .top10-placeholder {
+    background: linear-gradient(150deg, #35594e, #171a19 72%);
+}
+
+.top10-item:nth-child(3n) .top10-placeholder {
+    background: linear-gradient(150deg, #394c72, #17191f 72%);
+}
+
+.top10-placeholder span {
+    color: rgba(255, 255, 255, .72);
+    font-size: .7rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.top10-placeholder strong {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.55rem;
+    line-height: 1;
+}
+
+.top10-score {
+    background: #d9232e;
+    border-radius: 3px;
+    bottom: 8px;
+    color: #fff;
+    font-size: .82rem;
+    font-weight: 800;
+    left: 50%;
+    padding: 7px 14px;
+    position: absolute;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
+.top10-poster:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-3px);
+}
+
+.top10-meta {
     display: grid;
-    gap: 12px;
-    grid-template-columns: 24px minmax(0, 1fr) auto;
-    min-height: 42px;
+    gap: 3px;
+    left: 56px;
+    position: absolute;
+    top: 240px;
+    width: 164px;
 }
 
-.ranking-list a {
+.top10-title {
     color: var(--ink);
+    display: -webkit-box;
+    font-size: .82rem;
+    font-weight: 800;
+    line-height: 1.2;
     overflow: hidden;
     text-decoration: none;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+}
+
+.top10-meta > span {
+    color: var(--muted);
+    font-size: .68rem;
+    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.ranking-position {
-    color: var(--accent);
-    font-weight: 800;
+.top10-empty {
+    align-self: center;
+    color: var(--muted);
+    font-size: .9rem;
+    min-height: 100px;
+    padding: 36px 8px;
 }
 
-.ranking-score {
-    color: var(--accent);
-    font-weight: 800;
-}
-
-.ranking-empty {
-    display: block !important;
-    padding: 12px 0;
+.top10-list a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
 }
 
 @media (max-width: 640px) {
-    .rankings-grid {
-        grid-template-columns: 1fr;
-        gap: 28px;
+    .top10-item {
+        flex-basis: 224px;
+        height: 250px;
+    }
+
+    .top10-number {
+        font-size: 230px;
+    }
+
+    .top10-poster {
+        height: 204px;
+        margin-left: 48px;
+        width: 142px;
+    }
+
+    .top10-meta {
+        left: 48px;
+        top: 207px;
+        width: 142px;
     }
 }
 
@@ -368,6 +491,30 @@ form select {
     display: grid;
     gap: 24px;
     grid-template-columns: repeat(auto-fill, minmax(200px, 260px)); justify-content: center;
+}
+
+.catalogo-card-poster {
+    aspect-ratio: 2 / 3;
+    margin: 0 -20px 18px;
+    overflow: hidden;
+}
+
+.catalogo-card-poster img,
+.catalogo-card-placeholder {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+.catalogo-card-placeholder {
+    align-content: center;
+    background: linear-gradient(145deg, #314c43, #151719 75%);
+    color: var(--ink);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    padding: 16px;
+    text-align: center;
 }
 
 .genero-seccion {

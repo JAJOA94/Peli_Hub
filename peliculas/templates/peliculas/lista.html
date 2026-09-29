@@ -42,38 +42,64 @@
     </form>
     {% if anio_invalido %}<p class="filtro-error">El año debe ser un número.</p>{% endif %}
 
-    <section class="rankings-grid" aria-label="Rankings de películas">
+    <section class="rankings" aria-label="Rankings de películas">
         <div class="ranking-panel">
             <div class="ranking-heading">
                 <h2>Top 10 histórico</h2>
                 <span>Promedio de todas las calificaciones</span>
             </div>
-            <ol class="ranking-list">
+            <ol class="top10-list">
                 {% for pelicula in top_historico %}
-                    <li>
-                        <span class="ranking-position">{{ forloop.counter }}</span>
-                        <a href="{% url 'ver_pelicula' pelicula.id %}">{{ pelicula.titulo }}</a>
-                        <span class="ranking-score">★ {{ pelicula.calificacion_promedio|floatformat:1 }}</span>
+                    <li class="top10-item">
+                        <span class="top10-number" aria-hidden="true">{{ forloop.counter }}</span>
+                        <a class="top10-poster" href="{% url 'ver_pelicula' pelicula.id %}" aria-label="Número {{ forloop.counter }}: {{ pelicula.titulo }}, {{ pelicula.calificacion_promedio|floatformat:1 }} estrellas">
+                            {% if pelicula.portada %}
+                                <img src="{{ pelicula.portada.url }}" alt="Portada de {{ pelicula.titulo }}">
+                            {% else %}
+                                <span class="top10-placeholder">
+                                    <span>{{ pelicula.get_genero_display }}</span>
+                                    <strong>{{ pelicula.anio_estreno }}</strong>
+                                </span>
+                            {% endif %}
+                            <span class="top10-score">★ {{ pelicula.calificacion_promedio|floatformat:1 }}</span>
+                        </a>
+                        <div class="top10-meta">
+                            <a class="top10-title" href="{% url 'ver_pelicula' pelicula.id %}">{{ pelicula.titulo }}</a>
+                            <span>{{ pelicula.director }} · {{ pelicula.anio_estreno }}</span>
+                        </div>
                     </li>
                 {% empty %}
-                    <li class="ranking-empty">Todavía no hay calificaciones.</li>
+                    <li class="top10-empty">Todavía no hay calificaciones.</li>
                 {% endfor %}
             </ol>
         </div>
         <div class="ranking-panel">
             <div class="ranking-heading">
-                <h2>Top 10 del mes</h2>
+                <h2>Top 10 mensual</h2>
                 <span>Calificaciones del mes actual</span>
             </div>
-            <ol class="ranking-list">
+            <ol class="top10-list">
                 {% for pelicula in top_mensual %}
-                    <li>
-                        <span class="ranking-position">{{ forloop.counter }}</span>
-                        <a href="{% url 'ver_pelicula' pelicula.id %}">{{ pelicula.titulo }}</a>
-                        <span class="ranking-score">★ {{ pelicula.promedio_mes|floatformat:1 }}</span>
+                    <li class="top10-item">
+                        <span class="top10-number" aria-hidden="true">{{ forloop.counter }}</span>
+                        <a class="top10-poster" href="{% url 'ver_pelicula' pelicula.id %}" aria-label="Número {{ forloop.counter }}: {{ pelicula.titulo }}, {{ pelicula.promedio_mes|floatformat:1 }} estrellas este mes">
+                            {% if pelicula.portada %}
+                                <img src="{{ pelicula.portada.url }}" alt="Portada de {{ pelicula.titulo }}">
+                            {% else %}
+                                <span class="top10-placeholder">
+                                    <span>{{ pelicula.get_genero_display }}</span>
+                                    <strong>{{ pelicula.anio_estreno }}</strong>
+                                </span>
+                            {% endif %}
+                            <span class="top10-score">★ {{ pelicula.promedio_mes|floatformat:1 }}</span>
+                        </a>
+                        <div class="top10-meta">
+                            <a class="top10-title" href="{% url 'ver_pelicula' pelicula.id %}">{{ pelicula.titulo }}</a>
+                            <span>{{ pelicula.director }} · {{ pelicula.anio_estreno }}</span>
+                        </div>
                     </li>
                 {% empty %}
-                    <li class="ranking-empty">Todavía no hay calificaciones este mes.</li>
+                    <li class="top10-empty">Todavía no hay calificaciones este mes.</li>
                 {% endfor %}
             </ol>
         </div>
@@ -89,13 +115,17 @@
                 <div class="peliculas-grid">
                     {% for pelicula in grupo.peliculas %}
                         <div class="pelicula movie-card" tabindex="0" data-detail-url="{% url 'ver_pelicula' pelicula.id %}" aria-label="Abrir detalles de {{ pelicula.titulo }}">
-                            {% if pelicula.portada %}
-                                <img class="portada" src="{{ pelicula.portada.url }}" alt="{{ pelicula.titulo }}">
-                            {% endif %}
+                            <div class="catalogo-card-poster">
+                                {% if pelicula.portada %}
+                                    <img src="{{ pelicula.portada.url }}" alt="Portada de {{ pelicula.titulo }}">
+                                {% else %}
+                                    <span class="catalogo-card-placeholder">{{ pelicula.get_genero_display }}</span>
+                                {% endif %}
+                            </div>
 
-                            <h3><a class="movie-title-link" href="{% url 'ver_pelicula' pelicula.id %}">{{ pelicula.titulo }}</a></h3>
+                            <h3 class="catalogo-card-title"><a class="movie-title-link" href="{% url 'ver_pelicula' pelicula.id %}">{{ pelicula.titulo }}</a></h3>
 
-                            <div class="info">
+                            <div class="info catalogo-card-info">
                                 <strong>Director:</strong> <span class="dato">{{ pelicula.director }}</span><br>
                                 <strong>Año:</strong> <span class="dato">{{ pelicula.anio_estreno }}</span><br>
                                 <strong>Género:</strong> <span class="dato">{{ pelicula.get_genero_display }}</span>
