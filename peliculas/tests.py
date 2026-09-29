@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 from django.test import TestCase, override_settings
+from django.utils import timezone
 
 from .forms import CalificacionForm
 from .models import (
@@ -117,6 +118,133 @@ class PeliculasTests(TestCase):
         })
         self.assertRedirects(response, '/peliculas/')
         self.assertTrue(Pelicula.objects.filter(titulo='Nueva peli').exists())
+
+    def test_promedio_se_recalcula_al_crear_actualizar_y_borrar_calificacion(self):
+        primera = Calificacion.objects.create(
+            usuario=self.normal,
+            pelicula=self.pelicula_antigua,
+            puntuacion=4,
+        )
+        self.pelicula_antigua.refresh_from_db()
+        self.assertEqual(self.pelicula_antigua.calificacion_promedio, 4.0)
+        self.assertEqual(self.pelicula_antigua.total_calificaciones, 1)
+
+        segunda = Calificacion.objects.create(
+            usuario=self.otro,
+            pelicula=self.pelicula_antigua,
+            puntuacion=2,
+        )
+        self.pelicula_antigua.refresh_from_db()
+        self.assertEqual(self.pelicula_antigua.calificacion_promedio, 3.0)
+
+        primera.puntuacion = 5
+        primera.save()
+        self.pelicula_antigua.refresh_from_db()
+        self.assertEqual(self.pelicula_antigua.calificacion_promedio, 3.5)
+
+        segunda.delete()
+        self.pelicula_antigua.refresh_from_db()
+        self.assertEqual(self.pelicula_antigua.calificacion_promedio, 5.0)
+        self.assertEqual(self.pelicula_antigua.total_calificaciones, 1)
+
+    def test_catalogo_busca_con_q_genero_y_anio(self):
+        coincidencia = Pelicula.objects.create(
+            titulo='Búsqueda avanzada',
+            director='Directora de prueba',
+            anio_estreno=2020,
+            genero='drama',
+        )
+        Pelicula.objects.create(
+            titulo='Año diferente',
+            director='Directora de prueba',
+            anio_estreno=2021,
+            genero='drama',
+        )
+        Pelicula.objects.create(
+            titulo='Género diferente',
+            director='Directora de prueba',
+            anio_estreno=2020,
+            genero='accion',
+        )
+        self.client.force_login(self.normal)
+
+        response = self.client.get(
+            '/peliculas/?q=Directora&genero=drama&anio=2020'
+        )
+
+        self.assertContains(response, coincidencia.titulo)
+        self.assertNotContains(response, 'Año diferente')
+        self.assertNotContains(response, 'Género diferente')
+        self.assertNotContains(response, self.pelicula_antigua.titulo)
+
+    def test_top_historico_y_mensual_usan_sus_periodos(self):
+        Calificacion.objects.create(
+            usuario=self.normal,
+            pelicula=self.pelicula_antigua,
+            puntuacion=5,
+        )
+        Calificacion.objects.create(
+            usuario=self.otro,
+            pelicula=self.pelicula_reciente,
+            puntuacion=4,
+        )
+        Calificacion.objects.filter(pelicula=self.pelicula_reciente).update(
+            fecha=timezone.now().replace(day=1) - timezone.timedelta(days=1)
+        )
+        self.client.force_login(self.normal)
+
+        response = self.client.get('/peliculas/')
+
+        self.assertEqual(
+            response.context['top_historico'][0].pk,
+            self.pelicula_antigua.pk,
+        )
+        self.assertEqual(
+            [pelicula.pk for pelicula in response.context['top_mensual']],
+            [self.pelicula_antigua.pk],
+        )
+
+    def test_detalle_recomienda_por_director_y_genero(self):
+        pelicula = Pelicula.objects.create(
+            titulo='Película base',
+            director='Directora compartida',
+            anio_estreno=2020,
+            genero='drama',
+        )
+        misma_directora = Pelicula.objects.create(
+            titulo='Otra de la directora',
+            director='Directora compartida',
+            anio_estreno=2021,
+            genero='comedia',
+        )
+        similar = Pelicula.objects.create(
+            titulo='Otro drama',
+            director='Otro director',
+            anio_estreno=2022,
+            genero='drama',
+        )
+        Calificacion.objects.create(
+            usuario=self.normal,
+            pelicula=similar,
+            puntuacion=5,
+        )
+        self.client.force_login(self.normal)
+
+        response = self.client.get(f'/peliculas/ver/{pelicula.pk}/')
+
+        director_ids = {
+            recomendada.pk
+            for recomendada in response.context['peliculas_por_director']
+        }
+        similares = response.context['peliculas_similares']
+        self.assertIn(misma_directora.pk, director_ids)
+        self.assertNotIn(pelicula.pk, director_ids)
+        self.assertIn(similar.pk, [recomendada.pk for recomendada in similares])
+        self.assertNotIn(
+            misma_directora.pk,
+            [recomendada.pk for recomendada in similares],
+        )
+        self.assertTrue(all(recomendada.genero == pelicula.genero for recomendada in similares))
 
     def test_ver_pelicula_la_pone_en_progreso(self):
         self.client.force_login(self.normal)

@@ -111,5 +111,45 @@
             </div>
         </div>
     </div>
+
+    {% if peliculas_por_director %}
+        <section class="recomendaciones">
+            <div class="section-heading">
+                <h2>Más de {{ pelicula.director }}</h2>
+                <span>Películas del mismo director</span>
+            </div>
+            <div class="peliculas-grid">
+                {% for recomendada in peliculas_por_director %}
+                    <article class="pelicula recomendacion-card">
+                        <a class="recomendacion-link" href="{% url 'ver_pelicula' recomendada.id %}">
+                            {% if recomendada.portada %}<img class="portada" src="{{ recomendada.portada.url }}" alt="{{ recomendada.titulo }}">{% endif %}
+                            <h3>{{ recomendada.titulo }}</h3>
+                            <span>{{ recomendada.anio_estreno }} · {{ recomendada.get_genero_display }}</span>
+                        </a>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% if peliculas_similares %}
+        <section class="recomendaciones">
+            <div class="section-heading">
+                <h2>Películas similares</h2>
+                <span>Más del género {{ pelicula.get_genero_display }}</span>
+            </div>
+            <div class="peliculas-grid">
+                {% for recomendada in peliculas_similares %}
+                    <article class="pelicula recomendacion-card">
+                        <a class="recomendacion-link" href="{% url 'ver_pelicula' recomendada.id %}">
+                            {% if recomendada.portada %}<img class="portada" src="{{ recomendada.portada.url }}" alt="{{ recomendada.titulo }}">{% endif %}
+                            <h3>{{ recomendada.titulo }}</h3>
+                            <span>{{ recomendada.anio_estreno }} · ★ {{ recomendada.calificacion_promedio|floatformat:1 }}</span>
+                        </a>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
 </main>
 {% endblock %}

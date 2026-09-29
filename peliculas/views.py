@@ -1,11 +1,14 @@
 from urllib import request
+from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 from django.db import transaction
+from django.db.models import Avg, Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
@@ -27,11 +30,25 @@ def _redireccion_segura(request, por_defecto):
 def lista_peliculas(request):
     """Catálogo compartido: todos ven todas las películas disponibles."""
     try:
-        busqueda = request.GET.get('buscar', '').strip()
+        busqueda = request.GET.get('q', request.GET.get('buscar', '')).strip()
+        genero = request.GET.get('genero', '').strip()
+        anio = request.GET.get('anio', '').strip()
+        anio_invalido = bool(anio and not anio.isdigit())
         peliculas = Pelicula.objects.all()
-        
+
         if busqueda:
-            peliculas = peliculas.filter(titulo__icontains=busqueda)
+            peliculas = peliculas.filter(
+                Q(titulo__icontains=busqueda)
+                | Q(director__icontains=busqueda)
+                | Q(sinopsis__icontains=busqueda)
+            )
+        generos_validos = {codigo for codigo, _ in Pelicula.GENEROS}
+        if genero in generos_validos:
+            peliculas = peliculas.filter(genero=genero)
+        elif genero:
+            genero = ''
+        if anio and not anio_invalido:
+            peliculas = peliculas.filter(anio_estreno=int(anio))
         peliculas = list(peliculas)
 
         ESTADO_DISPLAY = {
@@ -66,11 +83,47 @@ def lista_peliculas(request):
                 p.estado_usuario = estado
                 p.estado_usuario_display = ESTADO_DISPLAY[estado]
 
+        ahora = timezone.localtime()
+        inicio_mes = ahora.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        if inicio_mes.month == 12:
+            inicio_mes_siguiente = inicio_mes.replace(year=inicio_mes.year + 1, month=1)
+        else:
+            inicio_mes_siguiente = inicio_mes.replace(month=inicio_mes.month + 1)
+
+        top_historico = Pelicula.objects.filter(
+            total_calificaciones__gt=0
+        ).order_by('-calificacion_promedio', '-total_calificaciones', 'titulo')[:10]
+        puntuaciones_mes = list(
+            Calificacion.objects.filter(
+                fecha__gte=inicio_mes,
+                fecha__lt=inicio_mes_siguiente,
+            )
+            .values('pelicula_id')
+            .annotate(promedio_mes=Avg('puntuacion'), votos_mes=Count('id'))
+            .order_by('-promedio_mes', '-votos_mes', 'pelicula_id')[:10]
+        )
+        peliculas_mes = Pelicula.objects.in_bulk(
+            fila['pelicula_id'] for fila in puntuaciones_mes
+        )
+        top_mensual = []
+        for fila in puntuaciones_mes:
+            pelicula = peliculas_mes.get(fila['pelicula_id'])
+            if pelicula:
+                pelicula.promedio_mes = round(fila['promedio_mes'], 2)
+                pelicula.votos_mes = fila['votos_mes']
+                top_mensual.append(pelicula)
+
         return render(request, 'peliculas/lista.html', {
             'peliculas': peliculas,
             'peliculas_por_genero': peliculas_por_genero,
             'peliculas_en_mi_lista': peliculas_en_mi_lista,
             'busqueda': busqueda,
+            'genero_seleccionado': genero,
+            'anio': anio if not anio_invalido else '',
+            'anio_invalido': anio_invalido,
+            'generos': Pelicula.GENEROS,
+            'top_historico': top_historico,
+            'top_mensual': top_mensual,
         })
     except Exception as e:
         messages.error(request, 'Error de conexión al cargar el catálogo de películas.')
@@ -166,12 +219,25 @@ def ver_pelicula(request, id):
             usuario=request.user, pelicula=pelicula
         ).values_list('estado', flat=True).first() or 'pendiente'
 
+    peliculas_por_director = list(
+        Pelicula.objects.filter(director__iexact=pelicula.director)
+        .exclude(pk=pelicula.pk)
+        .order_by('-calificacion_promedio', '-total_calificaciones', 'titulo')[:5]
+    )
+    peliculas_similares = Pelicula.objects.filter(genero=pelicula.genero).exclude(
+        pk=pelicula.pk
+    ).exclude(
+        pk__in=[recomendada.pk for recomendada in peliculas_por_director]
+    ).order_by('-calificacion_promedio', '-total_calificaciones', 'titulo')[:5]
+
     return render(request, 'peliculas/ver.html', {
         'pelicula': pelicula,
         'form_calificacion': form_calificacion,
         'calificacion_usuario': calificacion_usuario,
         'en_mi_lista': en_mi_lista,
         'estado_usuario': estado_usuario,
+        'peliculas_por_director': peliculas_por_director,
+        'peliculas_similares': peliculas_similares,
     })
 
 
@@ -262,7 +328,6 @@ def calificar_pelicula(request, id):
             calificacion.usuario = request.user
             calificacion.pelicula = pelicula
             calificacion.save()
-            pelicula.recalcular_promedio()
             messages.success(request, '¡Gracias por tu calificación!')
         except Exception as e:
             messages.error(request, 'Error en la base de datos al guardar tu calificación.')

@@ -20,10 +20,64 @@
         <span>{{ peliculas|length }} título{{ peliculas|length|pluralize:'s' }} en el catálogo</span>
     </div>
 
-    <form method="GET" class="buscador">
-        <input type="text" name="buscar" placeholder="🔎 Buscar película..." value="{{ busqueda }}">
+    <form method="GET" class="buscador buscador-avanzado">
+        <label>
+            <span>Buscar</span>
+            <input type="search" name="q" placeholder="Título, director o sinopsis" value="{{ busqueda }}">
+        </label>
+        <label>
+            <span>Género</span>
+            <select name="genero">
+                <option value="">Todos</option>
+                {% for codigo, nombre in generos %}
+                    <option value="{{ codigo }}" {% if genero_seleccionado == codigo %}selected{% endif %}>{{ nombre }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            <span>Año</span>
+            <input type="number" name="anio" min="1888" max="2100" value="{{ anio }}" placeholder="Ej. 2024">
+        </label>
         <button type="submit">Buscar</button>
     </form>
+    {% if anio_invalido %}<p class="filtro-error">El año debe ser un número.</p>{% endif %}
+
+    <section class="rankings-grid" aria-label="Rankings de películas">
+        <div class="ranking-panel">
+            <div class="ranking-heading">
+                <h2>Top 10 histórico</h2>
+                <span>Promedio de todas las calificaciones</span>
+            </div>
+            <ol class="ranking-list">
+                {% for pelicula in top_historico %}
+                    <li>
+                        <span class="ranking-position">{{ forloop.counter }}</span>
+                        <a href="{% url 'ver_pelicula' pelicula.id %}">{{ pelicula.titulo }}</a>
+                        <span class="ranking-score">★ {{ pelicula.calificacion_promedio|floatformat:1 }}</span>
+                    </li>
+                {% empty %}
+                    <li class="ranking-empty">Todavía no hay calificaciones.</li>
+                {% endfor %}
+            </ol>
+        </div>
+        <div class="ranking-panel">
+            <div class="ranking-heading">
+                <h2>Top 10 del mes</h2>
+                <span>Calificaciones del mes actual</span>
+            </div>
+            <ol class="ranking-list">
+                {% for pelicula in top_mensual %}
+                    <li>
+                        <span class="ranking-position">{{ forloop.counter }}</span>
+                        <a href="{% url 'ver_pelicula' pelicula.id %}">{{ pelicula.titulo }}</a>
+                        <span class="ranking-score">★ {{ pelicula.promedio_mes|floatformat:1 }}</span>
+                    </li>
+                {% empty %}
+                    <li class="ranking-empty">Todavía no hay calificaciones este mes.</li>
+                {% endfor %}
+            </ol>
+        </div>
+    </section>
 
     {% if peliculas %}
         {% for grupo in peliculas_por_genero %}

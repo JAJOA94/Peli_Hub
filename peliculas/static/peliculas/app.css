@@ -244,7 +244,108 @@ body > h2 {
     display: flex;
     gap: 8px;
     margin-bottom: 28px;
-    max-width: 520px;
+    max-width: 900px;
+}
+
+.buscador-avanzado {
+    align-items: end;
+}
+
+.buscador-avanzado label {
+    display: grid;
+    flex: 1;
+    gap: 6px;
+    min-width: 130px;
+}
+
+.buscador-avanzado label span {
+    color: var(--muted);
+    font-size: .76rem;
+    font-weight: 700;
+}
+
+.filtro-error {
+    color: #ff9da1;
+    font-size: .84rem;
+    margin: -16px 0 22px;
+}
+
+.rankings-grid {
+    display: grid;
+    gap: 32px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0 0 42px;
+}
+
+.ranking-panel {
+    border-top: 2px solid var(--accent);
+    min-width: 0;
+}
+
+.ranking-heading {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    justify-content: space-between;
+    padding: 12px 0 8px;
+}
+
+.ranking-heading h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    margin: 0;
+}
+
+.ranking-heading span,
+.ranking-list {
+    color: var(--muted);
+    font-size: .82rem;
+}
+
+.ranking-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.ranking-list li {
+    align-items: center;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    min-height: 42px;
+}
+
+.ranking-list a {
+    color: var(--ink);
+    overflow: hidden;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ranking-position {
+    color: var(--accent);
+    font-weight: 800;
+}
+
+.ranking-score {
+    color: var(--accent);
+    font-weight: 800;
+}
+
+.ranking-empty {
+    display: block !important;
+    padding: 12px 0;
+}
+
+@media (max-width: 640px) {
+    .rankings-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
 }
 
 .buscador input,
@@ -883,6 +984,21 @@ button.btn-logout:hover {
 
 .detalle-acciones {
     margin: 20px 0;
+}
+
+.recomendaciones {
+    margin-top: 38px;
+}
+
+.recomendacion-link {
+    color: inherit;
+    display: block;
+    text-decoration: none;
+}
+
+.recomendacion-link > span {
+    color: var(--muted);
+    font-size: .8rem;
 }
 
 /* ==== Página de reproducción ==== */
