@@ -37,9 +37,27 @@
                     <p class="reproductor-sinopsis">{{ pelicula.sinopsis }}</p>
                 {% endif %}
 
+                {% if not request.user.is_superuser %}
+                    <div class="detalle-acciones">
+                        <form method="post" action="{% url 'iniciar_visualizacion' pelicula.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-ver-pelicula">
+                                {% if estado_usuario == 'vista' %}↺ Ver de nuevo{% elif estado_usuario == 'progreso' %}▶ Continuar viendo{% else %}▶ Ver película{% endif %}
+                            </button>
+                        </form>
+                        <form method="post" action="{% url 'agregar_a_mi_lista' pelicula.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{% url 'ver_pelicula' pelicula.id %}">
+                            <button type="submit" class="btn-lista" {% if en_mi_lista %}disabled{% endif %}>
+                                {% if en_mi_lista %}En Mi lista{% else %}+ Agregar a Mi lista{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+
                 <form method="POST" action="{% url 'terminar_pelicula' pelicula.id %}" class="form-terminar">
                     {% csrf_token %}
-                    <button type="submit" class="btn-terminar">✓ Terminar de ver</button>
+                    {% if not request.user.is_superuser %}<button type="submit" class="btn-terminar">✓ Marcar como vista</button>{% endif %}
                 </form>
 
                 {% if not request.user.is_superuser %}

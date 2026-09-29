@@ -123,6 +123,15 @@ class PeliculasTests(TestCase):
             f'/peliculas/ver/{self.pelicula_antigua.id}/'
         )
         self.assertEqual(response.status_code, 200)
+        self.assertFalse(
+            EstadoPelicula.objects.filter(
+                usuario=self.normal, pelicula=self.pelicula_antigua
+            ).exists()
+        )
+        response = self.client.post(
+            f'/peliculas/ver/{self.pelicula_antigua.id}/iniciar/'
+        )
+        self.assertRedirects(response, f'/peliculas/ver/{self.pelicula_antigua.id}/')
         estado = EstadoPelicula.objects.get(
             usuario=self.normal, pelicula=self.pelicula_antigua
         )
@@ -130,7 +139,7 @@ class PeliculasTests(TestCase):
 
     def test_terminar_pelicula_la_pone_en_vista(self):
         self.client.force_login(self.normal)
-        self.client.get(f'/peliculas/ver/{self.pelicula_antigua.id}/')
+        self.client.post(f'/peliculas/ver/{self.pelicula_antigua.id}/iniciar/')
         response = self.client.post(
             f'/peliculas/terminar/{self.pelicula_antigua.id}/'
         )
@@ -152,11 +161,11 @@ class PeliculasTests(TestCase):
 
     def test_estado_es_independiente_por_usuario(self):
         self.client.force_login(self.normal)
-        self.client.get(f'/peliculas/ver/{self.pelicula_antigua.id}/')
+        self.client.post(f'/peliculas/ver/{self.pelicula_antigua.id}/iniciar/')
         self.client.post(f'/peliculas/terminar/{self.pelicula_antigua.id}/')
 
         self.client.force_login(self.otro)
-        self.client.get(f'/peliculas/ver/{self.pelicula_antigua.id}/')
+        self.client.post(f'/peliculas/ver/{self.pelicula_antigua.id}/iniciar/')
 
         self.assertEqual(
             EstadoPelicula.objects.get(usuario=self.normal, pelicula=self.pelicula_antigua).estado,
@@ -169,10 +178,9 @@ class PeliculasTests(TestCase):
 
     def test_ver_de_nuevo_no_degrada_vista(self):
         self.client.force_login(self.normal)
-        self.client.get(f'/peliculas/ver/{self.pelicula_antigua.id}/')
+        self.client.post(f'/peliculas/ver/{self.pelicula_antigua.id}/iniciar/')
         self.client.post(f'/peliculas/terminar/{self.pelicula_antigua.id}/')
-        # Volver a entrar a 'ver' no la saca de 'vista'.
-        self.client.get(f'/peliculas/ver/{self.pelicula_antigua.id}/')
+        self.client.post(f'/peliculas/ver/{self.pelicula_antigua.id}/iniciar/')
         self.assertEqual(
             EstadoPelicula.objects.get(
                 usuario=self.normal, pelicula=self.pelicula_antigua
@@ -183,6 +191,7 @@ class PeliculasTests(TestCase):
     def test_admin_no_puede_ver_ni_terminar(self):
         self.client.force_login(self.admin)
         self.client.get(f'/peliculas/ver/{self.pelicula_antigua.id}/')
+        self.client.post(f'/peliculas/ver/{self.pelicula_antigua.id}/iniciar/')
         self.client.post(f'/peliculas/terminar/{self.pelicula_antigua.id}/')
         self.assertFalse(
             EstadoPelicula.objects.filter(
@@ -193,12 +202,63 @@ class PeliculasTests(TestCase):
     def test_normal_ve_boton_ver_pelicula(self):
         self.client.force_login(self.normal)
         response = self.client.get('/peliculas/')
-        self.assertContains(response, 'Ver película')
+        self.assertContains(response, 'Ver detalles')
+        self.assertContains(response, '+ Mi lista')
+
+    def test_catalogo_esta_disponible_desde_mi_perfil(self):
+        self.client.force_login(self.normal)
+        response = self.client.get('/peliculas/mi-perfil/')
+        self.assertContains(response, 'Catálogo')
+        self.assertContains(response, 'href="/peliculas/"')
 
     def test_admin_no_ve_boton_ver_pelicula(self):
         self.client.force_login(self.admin)
         response = self.client.get('/peliculas/')
-        self.assertNotContains(response, 'Ver película')
+        self.assertNotContains(response, 'Ver detalles')
+        self.assertNotContains(response, '+ Mi lista')
+
+    def test_agregar_pelicula_crea_lista_privada_del_usuario(self):
+        self.client.force_login(self.normal)
+        response = self.client.post(
+            f'/peliculas/mi-lista/agregar/{self.pelicula_antigua.id}/'
+        )
+        self.assertRedirects(response, '/peliculas/')
+        lista = ListaPersonalizada.objects.get(usuario=self.normal, nombre='Mi lista')
+        self.assertTrue(lista.es_privada)
+        self.assertTrue(lista.peliculas.filter(id=self.pelicula_antigua.id).exists())
+
+    def test_catalogo_agrupa_por_genero_y_tarjeta_abre_detalle(self):
+        pelicula = Pelicula.objects.create(
+            titulo='Romance de prueba',
+            director='Directora C',
+            anio_estreno=2023,
+            genero='romance',
+        )
+        self.client.force_login(self.normal)
+
+        response = self.client.get('/peliculas/')
+
+        self.assertContains(response, 'Romance')
+        self.assertContains(
+            response,
+            f'data-detail-url="/peliculas/ver/{pelicula.id}/"',
+            html=False,
+        )
+
+    def test_detalle_muestra_sinopsis_completa_y_boton_ver(self):
+        sinopsis = 'Esta es la sinopsis completa que debe mostrarse sin recortarse.'
+        pelicula = Pelicula.objects.create(
+            titulo='Detalle completo',
+            director='Directora D',
+            anio_estreno=2025,
+            sinopsis=sinopsis,
+        )
+        self.client.force_login(self.normal)
+
+        response = self.client.get(f'/peliculas/ver/{pelicula.id}/')
+
+        self.assertContains(response, sinopsis)
+        self.assertContains(response, 'Ver película')
 
     def test_normal_no_puede_editar(self):
         self.client.force_login(self.normal)

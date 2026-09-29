@@ -25,49 +25,79 @@
         <button type="submit">Buscar</button>
     </form>
 
-    <div class="peliculas-grid">
-        {% for pelicula in peliculas %}
-            <div class="pelicula">
-                {% if pelicula.portada %}
-                    <img class="portada" src="{{ pelicula.portada.url }}" alt="{{ pelicula.titulo }}">
-                {% endif %}
-
-                <h3>{{ pelicula.titulo }}</h3>
-
-                <div class="info">
-                    <strong>Director:</strong> <span class="dato">{{ pelicula.director }}</span><br>
-                    <strong>Año:</strong> <span class="dato">{{ pelicula.anio_estreno }}</span><br>
-                    <strong>Género:</strong> <span class="dato">{{ pelicula.get_genero_display }}</span>
-                    {% if pelicula.puntuacion %}
-                        <br><strong>Puntuación:</strong> <span class="dato">{{ pelicula.puntuacion }}/5</span>
-                    {% endif %}
+    {% if peliculas %}
+        {% for grupo in peliculas_por_genero %}
+            <section class="genero-seccion" aria-labelledby="genero-{{ grupo.codigo }}">
+                <div class="genero-heading">
+                    <h2 id="genero-{{ grupo.codigo }}">{{ grupo.nombre }}</h2>
+                    <span>{{ grupo.peliculas|length }} película{{ grupo.peliculas|length|pluralize:'s' }}</span>
                 </div>
+                <div class="peliculas-grid">
+                    {% for pelicula in grupo.peliculas %}
+                        <div class="pelicula movie-card" tabindex="0" data-detail-url="{% url 'ver_pelicula' pelicula.id %}" aria-label="Abrir detalles de {{ pelicula.titulo }}">
+                            {% if pelicula.portada %}
+                                <img class="portada" src="{{ pelicula.portada.url }}" alt="{{ pelicula.titulo }}">
+                            {% endif %}
 
-                {% if pelicula.sinopsis %}
-                    <p class="sinopsis">{{ pelicula.sinopsis|truncatewords:22 }}</p>
-                {% endif %}
+                            <h3><a class="movie-title-link" href="{% url 'ver_pelicula' pelicula.id %}">{{ pelicula.titulo }}</a></h3>
 
-                {% if user.is_superuser %}
-                    <div class="acciones">
-                        <a class="btn-action editar" href="{% url 'editar_pelicula' pelicula.id %}" title="Editar" aria-label="Editar">✏️</a>
-                        <a class="btn-action eliminar" href="{% url 'eliminar_pelicula' pelicula.id %}" title="Eliminar" aria-label="Eliminar">🗑️</a>
-                    </div>
-                {% else %}
-                    <div class="estado">
-                        <span class="estado-badge badge-{{ pelicula.estado_usuario }}">{{ pelicula.estado_usuario_display }}</span>
-                        <a class="btn-ver-pelicula" href="{% url 'ver_pelicula' pelicula.id %}">
-                            {% if pelicula.estado_usuario == 'vista' %}↺ Ver de nuevo
-                            {% elif pelicula.estado_usuario == 'progreso' %}▶ Continuar viendo
-                            {% else %}▶ Ver película{% endif %}
-                        </a>
-                    </div>
-                {% endif %}
-            </div>
-        {% empty %}
-            <div class="sin-peliculas">
-                <p>No hay películas en el catálogo todavía.</p>
-            </div>
+                            <div class="info">
+                                <strong>Director:</strong> <span class="dato">{{ pelicula.director }}</span><br>
+                                <strong>Año:</strong> <span class="dato">{{ pelicula.anio_estreno }}</span><br>
+                                <strong>Género:</strong> <span class="dato">{{ pelicula.get_genero_display }}</span>
+                                {% if pelicula.puntuacion %}
+                                    <br><strong>Puntuación:</strong> <span class="dato">{{ pelicula.puntuacion }}/5</span>
+                                {% endif %}
+                            </div>
+
+                            {% if pelicula.sinopsis %}
+                                <p class="sinopsis">{{ pelicula.sinopsis|truncatewords:22 }}</p>
+                            {% endif %}
+
+                            {% if user.is_superuser %}
+                                <div class="acciones">
+                                    <a class="btn-action editar" href="{% url 'editar_pelicula' pelicula.id %}" title="Editar" aria-label="Editar">✏️</a>
+                                    <a class="btn-action eliminar" href="{% url 'eliminar_pelicula' pelicula.id %}" title="Eliminar" aria-label="Eliminar">🗑️</a>
+                                </div>
+                            {% else %}
+                                <div class="estado">
+                                    <span class="estado-badge badge-{{ pelicula.estado_usuario }}">{{ pelicula.estado_usuario_display }}</span>
+                                    <span class="card-actions">
+                                        <a class="btn-ver-pelicula" href="{% url 'ver_pelicula' pelicula.id %}">Ver detalles</a>
+                                        <form method="post" action="{% url 'agregar_a_mi_lista' pelicula.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button class="btn-lista" type="submit" {% if pelicula.id in peliculas_en_mi_lista %}disabled{% endif %}>
+                                                {% if pelicula.id in peliculas_en_mi_lista %}En Mi lista{% else %}+ Mi lista{% endif %}
+                                            </button>
+                                        </form>
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
         {% endfor %}
-    </div>
+    {% else %}
+        <div class="sin-peliculas">
+            <p>No hay películas que coincidan con tu búsqueda.</p>
+        </div>
+    {% endif %}
 </main>
+<script>
+    document.querySelectorAll('.movie-card').forEach(function (card) {
+        card.addEventListener('click', function (event) {
+            if (!event.target.closest('a, button, form, input, select, textarea')) {
+                window.location.href = card.dataset.detailUrl;
+            }
+        });
+        card.addEventListener('keydown', function (event) {
+            if (event.target === card && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
+                window.location.href = card.dataset.detailUrl;
+            }
+        });
+    });
+</script>
 {% endblock %}

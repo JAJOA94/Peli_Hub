@@ -40,11 +40,27 @@ def lista_peliculas(request):
             'vista': 'Vista',
         }
         
+        peliculas_por_genero = []
+        for codigo, nombre in Pelicula.GENEROS:
+            peliculas_genero = [p for p in peliculas if p.genero == codigo]
+            if peliculas_genero:
+                peliculas_por_genero.append({
+                    'codigo': codigo,
+                    'nombre': nombre,
+                    'peliculas': peliculas_genero,
+                })
+
+        peliculas_en_mi_lista = set()
         if not request.user.is_superuser:
             estados = {
                 e.pelicula_id: e.estado
                 for e in EstadoPelicula.objects.filter(usuario=request.user)
             }
+            peliculas_en_mi_lista = set(
+                ListaPersonalizada.objects.filter(
+                    usuario=request.user, nombre='Mi lista'
+                ).values_list('peliculas__id', flat=True)
+            )
             for p in peliculas:
                 estado = estados.get(p.id, 'pendiente')
                 p.estado_usuario = estado
@@ -52,6 +68,8 @@ def lista_peliculas(request):
 
         return render(request, 'peliculas/lista.html', {
             'peliculas': peliculas,
+            'peliculas_por_genero': peliculas_por_genero,
+            'peliculas_en_mi_lista': peliculas_en_mi_lista,
             'busqueda': busqueda,
         })
     except Exception as e:
@@ -128,44 +146,80 @@ def eliminar_pelicula(request, id):
 
 @login_required
 def ver_pelicula(request, id):
-    """El usuario pulsa 'Ver película' -> pasa automáticamente a 'en progreso'."""
-    if request.user.is_superuser:
-        messages.error(request, 'El estado de visionado es propio de cada usuario.')
-        return redirect('lista_peliculas')
-
+    """Muestra el detalle sin cambiar el estado hasta que el usuario pulse Ver."""
     pelicula = get_object_or_404(Pelicula, id=id)
-
-    try:
-        actual = EstadoPelicula.objects.filter(
+    calificacion_usuario = None
+    form_calificacion = None
+    en_mi_lista = False
+    estado_usuario = None
+    if not request.user.is_superuser:
+        calificacion_usuario = Calificacion.objects.filter(
             usuario=request.user, pelicula=pelicula
         ).first()
-
-        if not actual or actual.estado != 'vista':
-            EstadoPelicula.objects.update_or_create(
-                usuario=request.user,
-                pelicula=pelicula,
-                defaults={'estado': 'progreso'},
-            )
-
-        HistorialVisualizacion.objects.update_or_create(
+        form_calificacion = CalificacionForm(instance=calificacion_usuario)
+        en_mi_lista = ListaPersonalizada.objects.filter(
             usuario=request.user,
-            pelicula=pelicula,
-            defaults={'progreso': 1, 'duracion_vista': 0},
-        )
-    except Exception as e:
-        messages.error(request, 'Error de conexión al registrar tu avance.')
-        return redirect('lista_peliculas')
-
-    calificacion_usuario = Calificacion.objects.filter(
-        usuario=request.user, pelicula=pelicula
-    ).first()
-    form_calificacion = CalificacionForm(instance=calificacion_usuario)
+            nombre='Mi lista',
+            peliculas=pelicula,
+        ).exists()
+        estado_usuario = EstadoPelicula.objects.filter(
+            usuario=request.user, pelicula=pelicula
+        ).values_list('estado', flat=True).first() or 'pendiente'
 
     return render(request, 'peliculas/ver.html', {
         'pelicula': pelicula,
         'form_calificacion': form_calificacion,
         'calificacion_usuario': calificacion_usuario,
+        'en_mi_lista': en_mi_lista,
+        'estado_usuario': estado_usuario,
     })
+
+
+@login_required
+@require_POST
+def iniciar_visualizacion(request, id):
+    if request.user.is_superuser:
+        messages.error(request, 'El estado de visionado es propio de cada usuario.')
+        return redirect('lista_peliculas')
+
+    pelicula = get_object_or_404(Pelicula, id=id)
+    try:
+        estado, creado = EstadoPelicula.objects.get_or_create(
+            usuario=request.user,
+            pelicula=pelicula,
+            defaults={'estado': 'progreso'},
+        )
+        if not creado and estado.estado != 'vista':
+            estado.estado = 'progreso'
+            estado.save(update_fields=['estado', 'actualizado'])
+        HistorialVisualizacion.objects.update_or_create(
+            usuario=request.user,
+            pelicula=pelicula,
+            defaults={'progreso': 1, 'duracion_vista': 0},
+        )
+        pelicula.registrar_visualizacion()
+        messages.success(request, f'Comenzaste a ver "{pelicula.titulo}".')
+    except Exception:
+        messages.error(request, 'No se pudo registrar el inicio de la visualización.')
+    return redirect('ver_pelicula', id=pelicula.id)
+
+
+@login_required
+@require_POST
+def agregar_a_mi_lista(request, id):
+    if request.user.is_superuser:
+        messages.error(request, 'Las listas personales son para cuentas de usuario.')
+        return redirect('lista_peliculas')
+
+    pelicula = get_object_or_404(Pelicula, id=id)
+    lista, _ = ListaPersonalizada.objects.get_or_create(
+        usuario=request.user,
+        nombre='Mi lista',
+        defaults={'es_privada': True},
+    )
+    lista.peliculas.add(pelicula)
+    messages.success(request, f'"{pelicula.titulo}" se agregó a Mi lista.')
+    return _redireccion_segura(request, 'lista_peliculas')
 
 
 @login_required
