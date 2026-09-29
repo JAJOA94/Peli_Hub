@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.db.models import Count
 from django.test import TestCase, override_settings
 
 from .forms import CalificacionForm
@@ -341,6 +342,17 @@ class ModelosRequeridosTests(TestCase):
         self.assertTrue(hasattr(ListaPersonalizada, 'usuario'))
         self.assertTrue(hasattr(ListaPersonalizada, 'es_privada'))
         self.assertTrue(hasattr(ListaPersonalizada, 'peliculas'))
+
+    def test_catalogo_tiene_al_menos_12_peliculas_por_genero(self):
+        conteos = {
+            fila['genero']: fila['total']
+            for fila in Pelicula.objects.values('genero').annotate(total=Count('id'))
+        }
+
+        self.assertEqual(
+            conteos,
+            {genero: 12 for genero, _ in Pelicula.GENEROS},
+        )
 
     def test_formulario_de_calificacion_usa_estrellas(self):
         form = CalificacionForm()
