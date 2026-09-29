@@ -4,11 +4,12 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
-from .forms import CalificacionForm, PeliculaForm, RegistroForm
+from .forms import CalificacionForm, PerfilForm, PeliculaForm, RegistroForm, UsuarioPerfilForm
 from .models import Calificacion, EstadoPelicula, HistorialVisualizacion, ListaPersonalizada, Pelicula
 
 
@@ -233,6 +234,31 @@ def listas_personalizadas(request):
     return render(request, 'peliculas/listas.html', {'listas': listas})
 
 
+@login_required
+def perfil_usuario(request):
+    perfil = getattr(request.user, 'perfil', None)
+    if request.method == 'POST':
+        usuario_form = UsuarioPerfilForm(request.POST, instance=request.user)
+        perfil_form = PerfilForm(request.POST, instance=perfil)
+        if usuario_form.is_valid() and perfil_form.is_valid():
+            with transaction.atomic():
+                usuario_form.save()
+                perfil_actualizado = perfil_form.save(commit=False)
+                perfil_actualizado.usuario = request.user
+                perfil_actualizado.save()
+            messages.success(request, 'Tu perfil se actualizó correctamente.')
+            return redirect('perfil_usuario')
+        messages.error(request, 'Revisa los datos del formulario.')
+    else:
+        usuario_form = UsuarioPerfilForm(instance=request.user)
+        perfil_form = PerfilForm(instance=perfil)
+
+    return render(request, 'peliculas/perfil.html', {
+        'usuario_form': usuario_form,
+        'perfil_form': perfil_form,
+    })
+
+
 def iniciar_sesion(request):
     if request.user.is_authenticated:
         return redirect('lista_peliculas')
@@ -272,7 +298,12 @@ def registrarse(request):
     return render(request, 'peliculas/registro.html', {'form': form})
 
 
-@user_passes_test(lambda user: user.is_superuser)
+@login_required
+@user_passes_test(
+    lambda user: user.is_superuser,
+    login_url='lista_peliculas',
+    redirect_field_name=None,
+)
 def panel_admin(request):
     User = get_user_model()
     return render(request, 'peliculas/panel_admin.html', {

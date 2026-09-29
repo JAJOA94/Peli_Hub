@@ -70,3 +70,20 @@ class RegistroForm(UserCreationForm):
             )
 
         return usuario
+
+
+class UsuarioPerfilForm(forms.ModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = ['username', 'email']
+        labels = {
+            'username': 'Nombre de usuario',
+            'email': 'Correo electrónico',
+        }
+
+
+class PerfilForm(forms.ModelForm):
+    class Meta:
+        model = Perfil
+        fields = ['telefono']
+        labels = {'telefono': 'Número de teléfono'}

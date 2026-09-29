@@ -20,6 +20,7 @@
                         <a class="btn-secondary" href="{% url 'historial_visualizacion' %}">Mi historial</a>
                         <a class="btn-secondary" href="{% url 'listas_personalizadas' %}">Mis listas</a>
                     {% endif %}
+                    <a class="btn-secondary" href="{% url 'perfil_usuario' %}">Mi perfil</a>
                     <form method="post" action="{% url 'logout' %}" class="form-logout">
                         {% csrf_token %}
                         <button type="submit" class="btn-logout">Cerrar sesión</button>

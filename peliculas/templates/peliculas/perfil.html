@@ -1,0 +1,22 @@
+{% extends 'peliculas/base.html' %}
+
+{% block titulo %}Mi perfil - PeliHub{% endblock %}
+
+{% block contenido %}
+<main>
+    <section class="admin-hero">
+        <span class="kicker">Cuenta personal</span>
+        <h2>Mi perfil</h2>
+        <p>Actualiza tus datos de usuario.</p>
+    </section>
+
+    <section class="admin-actions">
+        <form method="post">
+            {% csrf_token %}
+            {{ usuario_form.as_p }}
+            {{ perfil_form.as_p }}
+            <button type="submit" class="btn-agregar">Guardar cambios</button>
+        </form>
+    </section>
+</main>
+{% endblock %}

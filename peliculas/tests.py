@@ -11,6 +11,7 @@ from .models import (
     HistorialVisualizacion,
     ListaPersonalizada,
     Pelicula,
+    Perfil,
 )
 
 
@@ -48,6 +49,33 @@ class PeliculasTests(TestCase):
         usuario = get_user_model().objects.get(username='nueva_persona')
         self.assertEqual(usuario.email, 'nueva@example.com')
         self.assertEqual(usuario.perfil.telefono, '5551234567')
+
+    def test_perfil_solo_actualiza_los_datos_del_usuario_autenticado(self):
+        Perfil.objects.create(usuario=self.normal, telefono='111111')
+        Perfil.objects.create(usuario=self.otro, telefono='222222')
+        self.client.force_login(self.normal)
+
+        response = self.client.post('/peliculas/mi-perfil/', {
+            'username': 'usuario_actualizado',
+            'email': 'actualizado@example.com',
+            'telefono': '333333',
+        })
+
+        self.assertRedirects(response, '/peliculas/mi-perfil/')
+        self.normal.refresh_from_db()
+        self.otro.refresh_from_db()
+        self.assertEqual(self.normal.username, 'usuario_actualizado')
+        self.assertEqual(self.normal.email, 'actualizado@example.com')
+        self.assertEqual(self.normal.perfil.telefono, '333333')
+        self.assertEqual(self.otro.username, 'otro_test')
+        self.assertEqual(self.otro.perfil.telefono, '222222')
+
+    def test_perfil_requiere_autenticacion(self):
+        response = self.client.get('/peliculas/mi-perfil/')
+        self.assertRedirects(
+            response,
+            '/peliculas/login/?next=/peliculas/mi-perfil/',
+        )
 
     def test_catalogo_muestra_todas_las_peliculas(self):
         self.client.force_login(self.normal)
@@ -262,7 +290,7 @@ class ModelosRequeridosTests(TestCase):
     def test_panel_admin_solo_superusuario(self):
         self.client.force_login(self.normal)
         response = self.client.get('/peliculas/panel-admin/')
-        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/peliculas/')
 
         self.client.force_login(self.admin)
         response = self.client.get('/peliculas/panel-admin/')

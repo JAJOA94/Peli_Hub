@@ -12,6 +12,7 @@ urlpatterns = [
     path('calificar/<int:id>/', views.calificar_pelicula, name='calificar_pelicula'),
     path('mi-historial/', views.historial_visualizacion, name='historial_visualizacion'),
     path('mis-listas/', views.listas_personalizadas, name='listas_personalizadas'),
+    path('mi-perfil/', views.perfil_usuario, name='perfil_usuario'),
     path('login/', views.iniciar_sesion, name='login'),
     path('registro/', views.registrarse, name='registro'),
     path('panel-admin/', views.panel_admin, name='panel_admin'),
