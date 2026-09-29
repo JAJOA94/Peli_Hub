@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.db.models import Count
 from django.test import TestCase, override_settings
 from django.utils import timezone
@@ -84,6 +85,15 @@ class PeliculasTests(TestCase):
         response = self.client.get('/peliculas/')
         self.assertContains(response, 'Película antigua')
         self.assertContains(response, 'Película reciente')
+
+    def test_hero_incluye_clips_locales_de_fondo(self):
+        self.client.force_login(self.normal)
+
+        response = self.client.get('/peliculas/')
+
+        self.assertContains(response, '/static/peliculas/videos/hero/sala-cine.mp4')
+        self.assertContains(response, '/static/peliculas/videos/hero/ambiente-cyberpunk.mp4')
+        self.assertContains(response, '/static/peliculas/videos/hero/escena-nocturna-auto.mp4')
 
     def test_lista_ordenada_por_anio_descendente(self):
         self.client.force_login(self.normal)
@@ -483,6 +493,26 @@ class ModelosRequeridosTests(TestCase):
         self.assertEqual(
             conteos,
             {genero: 12 for genero, _ in Pelicula.GENEROS},
+        )
+
+    def test_comando_demo_llena_los_tops_sin_duplicar_calificaciones(self):
+        call_command('generar_calificaciones_demo', verbosity=0)
+        call_command('generar_calificaciones_demo', verbosity=0)
+
+        Usuario = get_user_model()
+        demo = Usuario.objects.get(username='pelihub_demo_calificaciones')
+        calificaciones_demo = Calificacion.objects.filter(usuario=demo)
+        ahora = timezone.localtime()
+
+        self.assertFalse(demo.is_active)
+        self.assertFalse(demo.has_usable_password())
+        self.assertEqual(calificaciones_demo.count(), Pelicula.objects.count())
+        self.assertEqual(
+            calificaciones_demo.filter(
+                fecha__year=ahora.year,
+                fecha__month=ahora.month,
+            ).count(),
+            Pelicula.objects.count(),
         )
 
     def test_formulario_de_calificacion_usa_estrellas(self):

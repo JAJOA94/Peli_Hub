@@ -4,16 +4,77 @@
 
 {% block contenido %}
 <main>
-    <section class="hero">
-        <div class="hero-slide"></div>
-        <div class="hero-slide"></div>
-        <div class="hero-slide"></div>
-        <div class="hero-content">
-            <span class="kicker">Catálogo compartido</span>
-            <h2>Historias que se quedan contigo.</h2>
-            <p>Descubre las películas y marca si la viste o la dejaste a medias.</p>
+    {% if not busqueda and not genero_seleccionado and not anio %}
+    <section class="hero" data-hero>
+        <div class="hero-backdrop" aria-hidden="true">
+            {% for destacada in peliculas_destacadas %}
+                <div class="hero-slide{% if forloop.first %} is-active{% endif %}"
+                     data-hero-slide
+                     data-title="{{ destacada.titulo }}"
+                     data-synopsis="{{ destacada.sinopsis|default:'Descubre esta película destacada de PeliHub.'|truncatechars:220 }}"
+                     data-rating="{% if destacada.total_calificaciones %}★ {{ destacada.calificacion_promedio|floatformat:1 }} / 5{% else %}Sin calificación{% endif %}"
+                     data-year="{{ destacada.anio_estreno }}"
+                     data-duration="{{ destacada.duracion }}"
+                     data-detail-url="{% url 'ver_pelicula' destacada.id %}"
+                     data-add-url="{% url 'agregar_a_mi_lista' destacada.id %}">
+                    {% if destacada.portada %}
+                        <img class="hero-poster" src="{{ destacada.portada.url }}" alt="" {% if not forloop.first %}loading="lazy"{% endif %}>
+                    {% endif %}
+                    {% if destacada.hero_video_url %}
+                        <video class="hero-video" muted playsinline loop preload="none" {% if destacada.portada %}poster="{{ destacada.portada.url }}"{% endif %}>
+                            <source src="{{ destacada.hero_video_url }}" type="video/mp4">
+                        </video>
+                    {% endif %}
+                </div>
+            {% endfor %}
         </div>
+        <div class="hero-shade" aria-hidden="true"></div>
+
+        {% if pelicula_destacada %}
+            <div class="hero-content">
+                <span class="kicker">PELÍCULA DESTACADA</span>
+                <h2 class="hero-title" data-hero-title>{{ pelicula_destacada.titulo }}</h2>
+                <div class="hero-metadata" aria-label="Información de la película">
+                    <span data-hero-rating>{% if pelicula_destacada.total_calificaciones %}★ {{ pelicula_destacada.calificacion_promedio|floatformat:1 }} / 5{% else %}Sin calificación{% endif %}</span>
+                    <span data-hero-year>{{ pelicula_destacada.anio_estreno }}</span>
+                    {% if pelicula_destacada.duracion %}<span data-hero-duration>{{ pelicula_destacada.duracion }} min</span>{% else %}<span data-hero-duration hidden></span>{% endif %}
+                </div>
+                <p class="hero-synopsis" data-hero-synopsis>{{ pelicula_destacada.sinopsis|default:'Descubre esta película destacada de PeliHub.'|truncatechars:220 }}</p>
+                <div class="hero-cta">
+                    <a class="hero-button hero-button-primary" data-hero-watch href="{% url 'ver_pelicula' pelicula_destacada.id %}">▶ Ver ahora</a>
+                    {% if not request.user.is_superuser %}
+                        <form method="post" data-hero-list-form action="{% url 'agregar_a_mi_lista' pelicula_destacada.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button class="hero-button hero-button-secondary" type="submit">+ Añadir a mi lista</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="hero-content">
+                <span class="kicker">CATÁLOGO PELIHUB</span>
+                <h2 class="hero-title">Historias que se quedan contigo.</h2>
+                <p class="hero-synopsis">Explora películas, descubre tus próximas favoritas y crea tu propia lista.</p>
+                <a class="hero-button hero-button-primary" href="#catalogo">Explorar catálogo</a>
+            </div>
+        {% endif %}
+
+        {% if peliculas_destacadas %}
+            <div class="hero-controls">
+                <span class="hero-slide-count"><span data-hero-current>01</span> / <span data-hero-total>{{ peliculas_destacadas|length|stringformat:'02d' }}</span></span>
+                <div class="hero-indicators" role="group" aria-label="Seleccionar película destacada">
+                    {% for destacada in peliculas_destacadas %}
+                        <button type="button" class="hero-indicator{% if forloop.first %} is-active{% endif %}" data-hero-indicator="{{ forloop.counter0 }}" aria-label="Mostrar {{ destacada.titulo }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"></button>
+                    {% endfor %}
+                </div>
+                <button type="button" class="hero-audio" data-hero-audio {% if not hero_tiene_video %}disabled{% endif %} aria-pressed="false" aria-label="Activar audio del video">
+                    <span data-hero-audio-label>{% if hero_tiene_video %}Activar audio{% else %}Video no disponible{% endif %}</span>
+                </button>
+            </div>
+        {% endif %}
     </section>
+    {% endif %}
 
     <div class="section-heading">
         <h2>Películas disponibles</h2>
@@ -106,6 +167,7 @@
     </section>
 
     {% if peliculas %}
+        <div id="catalogo"></div>
         {% for grupo in peliculas_por_genero %}
             <section class="genero-seccion" aria-labelledby="genero-{{ grupo.codigo }}">
                 <div class="genero-heading">
@@ -183,5 +245,134 @@
             }
         });
     });
+
+    var hero = document.querySelector('[data-hero]');
+    if (hero) {
+        var slides = Array.from(hero.querySelectorAll('[data-hero-slide]'));
+        var indicators = Array.from(hero.querySelectorAll('[data-hero-indicator]'));
+        var currentCount = hero.querySelector('[data-hero-current]');
+        var totalCount = hero.querySelector('[data-hero-total]');
+        var title = hero.querySelector('[data-hero-title]');
+        var synopsis = hero.querySelector('[data-hero-synopsis]');
+        var rating = hero.querySelector('[data-hero-rating]');
+        var year = hero.querySelector('[data-hero-year]');
+        var duration = hero.querySelector('[data-hero-duration]');
+        var watchLink = hero.querySelector('[data-hero-watch]');
+        var listForm = hero.querySelector('[data-hero-list-form]');
+        var audioButton = hero.querySelector('[data-hero-audio]');
+        var audioLabel = hero.querySelector('[data-hero-audio-label]');
+        var activeIndex = 0;
+        var muted = true;
+        var carouselTimer;
+        var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function showSlide(index) {
+            activeIndex = index;
+            var activeSlide = slides[activeIndex];
+            var video = activeSlide.querySelector('video');
+
+            slides.forEach(function (slide, slideIndex) {
+                var isActive = slideIndex === activeIndex;
+                slide.classList.toggle('is-active', isActive);
+                slide.setAttribute('aria-hidden', String(!isActive));
+                var slideVideo = slide.querySelector('video');
+                if (slideVideo && !isActive) {
+                    slideVideo.pause();
+                }
+            });
+
+            if (title) title.textContent = activeSlide.dataset.title;
+            if (synopsis) synopsis.textContent = activeSlide.dataset.synopsis;
+            if (rating) rating.textContent = activeSlide.dataset.rating;
+            if (year) year.textContent = activeSlide.dataset.year;
+            if (duration) {
+                duration.hidden = !activeSlide.dataset.duration || activeSlide.dataset.duration === '0';
+                duration.textContent = activeSlide.dataset.duration + ' min';
+            }
+            if (watchLink) watchLink.href = activeSlide.dataset.detailUrl;
+            if (listForm) {
+                listForm.action = activeSlide.dataset.addUrl;
+                listForm.querySelector('[name="next"]').value = activeSlide.dataset.detailUrl;
+            }
+
+            indicators.forEach(function (indicator, indicatorIndex) {
+                var isActive = indicatorIndex === activeIndex;
+                indicator.classList.toggle('is-active', isActive);
+                indicator.setAttribute('aria-pressed', String(isActive));
+            });
+            if (currentCount) currentCount.textContent = String(activeIndex + 1).padStart(2, '0');
+            if (totalCount) totalCount.textContent = String(slides.length).padStart(2, '0');
+
+            if (audioButton) {
+                audioButton.disabled = !video;
+                audioButton.setAttribute('aria-pressed', String(Boolean(video) && !muted));
+                audioButton.setAttribute(
+                    'aria-label',
+                    video ? (muted ? 'Activar audio del video' : 'Silenciar video') : 'Video no disponible'
+                );
+                if (audioLabel) {
+                    audioLabel.textContent = video
+                        ? (muted ? 'Activar audio' : 'Silenciar')
+                        : 'Video no disponible';
+                }
+            }
+
+            if (video) {
+                video.muted = muted;
+                var playback = video.play();
+                if (playback && playback.catch) playback.catch(function () {});
+            }
+        }
+
+        function startCarousel() {
+            window.clearInterval(carouselTimer);
+            if (slides.length > 1 && !reducedMotion) {
+                carouselTimer = window.setInterval(function () {
+                    showSlide((activeIndex + 1) % slides.length);
+                }, 8000);
+            }
+        }
+
+        if (slides.length) {
+            showSlide(0);
+            startCarousel();
+        }
+
+        indicators.forEach(function (indicator, index) {
+            indicator.addEventListener('click', function () {
+                showSlide(index);
+                startCarousel();
+            });
+        });
+
+        if (audioButton) {
+            audioButton.addEventListener('click', function () {
+                var video = slides[activeIndex].querySelector('video');
+                if (!video) return;
+                muted = !muted;
+                video.muted = muted;
+                audioButton.setAttribute('aria-pressed', String(!muted));
+                audioButton.setAttribute('aria-label', muted ? 'Activar audio del video' : 'Silenciar video');
+                if (audioLabel) audioLabel.textContent = muted ? 'Activar audio' : 'Silenciar';
+            });
+        }
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) {
+                window.clearInterval(carouselTimer);
+                slides.forEach(function (slide) {
+                    var video = slide.querySelector('video');
+                    if (video) video.pause();
+                });
+            } else {
+                startCarousel();
+                var activeVideo = slides[activeIndex].querySelector('video');
+                if (activeVideo) {
+                    var playback = activeVideo.play();
+                    if (playback && playback.catch) playback.catch(function () {});
+                }
+            }
+        });
+    }
 </script>
 {% endblock %}

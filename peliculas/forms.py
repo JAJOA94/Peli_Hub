@@ -16,6 +16,7 @@ class PeliculaForm(forms.ModelForm):
             'sinopsis',
             'puntuacion',
             'portada',
+            'video_fondo_url',
         ]
         widgets = {
             'anio_estreno': forms.NumberInput(attrs={'min': 1888, 'max': 2100}),

@@ -62,6 +62,10 @@ class Pelicula(models.Model):
     puntuacion = models.IntegerField(choices=PUNTUACIONES, null=True, blank=True)
     portada = models.ImageField(upload_to='portadas/', blank=True, null=True)
     imagen = models.ImageField(upload_to='portadas/', blank=True, null=True)
+    video_fondo_url = models.URLField(
+        blank=True,
+        help_text='URL opcional de un video MP4 para el banner principal.',
+    )
     duracion = models.PositiveIntegerField(default=0, help_text='Duración en minutos')
     fecha_agregada = models.DateTimeField(default=timezone.now)
     calificacion_promedio = models.FloatField(default=0.0)
